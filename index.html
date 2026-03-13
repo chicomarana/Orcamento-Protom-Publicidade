@@ -7,96 +7,64 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --yellow-main: #FFCB05;
-            --yellow-light: #FFFBF0;
-            --orange-main: #F47920;
-            --orange-light: #FFF5EC;
-            --text-dark: #333333;
-            --text-gray: #666666;
-            --border-color: #E0E0E0;
-            --green-btn: #4CAF50;
-            --green-btn-hover: #45a049;
+            --yellow-main: #FFCB05; --yellow-light: #FFFBF0; --orange-main: #F47920; --orange-light: #FFF5EC;
+            --text-dark: #333333; --text-gray: #666666; --border-color: #E0E0E0; --green-btn: #4CAF50;
+            --blue-btn: #2196F3; --red-btn: #F44336;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
-        
         body { background-color: #f7f7f7; color: var(--text-dark); display: flex; justify-content: center; }
+        .app-container { width: 100%; max-width: 480px; background-color: #ffffff; min-height: 100vh; padding: 20px 15px; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
 
-        .app-container {
-            width: 100%;
-            max-width: 480px; 
-            background-color: #ffffff;
-            min-height: 100vh;
-            padding: 20px 15px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.05);
-        }
-
-        .header { text-align: center; margin-bottom: 25px; }
+        .header { text-align: center; margin-bottom: 20px; }
         .header h1 { font-size: 24px; color: var(--yellow-main); }
         .header h1 span { color: var(--orange-main); }
         .header p { font-size: 12px; color: var(--text-gray); }
 
-        .card { border-radius: 12px; padding: 20px 15px; margin-bottom: 20px; position: relative; }
+        /* TOP ACTION BAR */
+        .top-actions { display: flex; gap: 8px; margin-bottom: 20px; }
+        .top-btn { flex: 1; padding: 10px 5px; border-radius: 8px; border: none; font-size: 12px; font-weight: 700; color: #fff; cursor: pointer; text-transform: uppercase; }
+        .btn-limpar { background-color: var(--text-gray); }
+        .btn-abrir { background-color: var(--blue-btn); }
+        .btn-ver { background-color: var(--green-btn); }
+
+        .card { border-radius: 12px; padding: 20px 15px; margin-bottom: 20px; }
         .card-yellow { border: 2px solid var(--yellow-main); background-color: var(--yellow-light); }
         .card-orange { border: 2px solid var(--orange-main); background-color: var(--orange-light); }
-
-        .card-title { font-size: 18px; font-weight: 700; margin-bottom: 15px; display: flex; align-items: center; }
-        .card-yellow .card-title { color: var(--text-dark); }
-        .card-orange .card-title { color: var(--text-dark); }
-
-        .input-group { position: relative; margin-bottom: 15px; background: transparent; }
-        .input-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-dark); margin-bottom: 5px; margin-left: 5px; }
-        .input-row { display: flex; gap: 8px; }
-
-        .input-group input, .input-group select {
-            width: 100%; padding: 12px; border: 1px solid var(--yellow-main); border-radius: 8px;
-            font-size: 14px; background-color: #fff; outline: none; flex: 1;
-        }
+        .card-gray { border: 2px solid #ccc; background-color: #f9f9f9; }
         
-        /* TRANSFORMA O VISUAL EM MAIÚSCULAS COM EXCEÇÕES */
+        .card-title { font-size: 16px; font-weight: 700; margin-bottom: 15px; }
+
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; margin-left: 5px; }
+        .input-row { display: flex; gap: 8px; align-items: center; }
+        .input-group input, .input-group select { width: 100%; padding: 12px; border: 1px solid var(--yellow-main); border-radius: 8px; font-size: 14px; outline: none; flex: 1; }
+        
         .input-group input[type="text"]:not(.item-desc):not(.item-title-case):not(.item-data), 
-        .input-group input[list]:not(.item-desc):not(.item-title-case):not(.item-data) {
-            text-transform: uppercase;
-        }
+        .input-group input[list]:not(.item-desc):not(.item-title-case):not(.item-data) { text-transform: uppercase; }
 
-        .card-orange .input-group input, .card-orange .input-group select { border-color: var(--orange-main); }
-        .input-group input:focus, .input-group select:focus { box-shadow: 0 0 0 2px rgba(255, 203, 5, 0.3); }
-
-        .btn-small {
-            background-color: var(--green-btn); color: #ffffff; border: none; border-radius: 8px;
-            width: 100px; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap;
-            text-align: center; transition: background-color 0.2s;
-        }
-        .btn-small:active { background-color: var(--green-btn-hover); transform: translateY(2px); }
-
-        .fake-input {
-            width: 100%; padding: 12px; border: 1px solid var(--orange-main); border-radius: 8px;
-            font-size: 14px; background-color: #fff; min-height: 46px; cursor: pointer; color: var(--text-gray);
-            display: flex; align-items: center;
-        }
-        .fake-input.preenchido { color: var(--text-dark); }
-        .dropdown-meios {
-            border: 1px solid var(--orange-main); border-top: none; border-radius: 0 0 8px 8px;
-            padding: 15px; background: #FFF5EC; margin-top: -5px; display: none;
-        }
-        .meio-checkbox-item { display: flex; align-items: center; margin-bottom: 10px; font-size: 14px; color: var(--text-dark); }
-        .meio-checkbox-item input { margin-right: 10px; width: 20px; height: 20px; accent-color: var(--orange-main); }
-
-        .item-row { background: #fff; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; margin-bottom: 10px; }
-        .btn-add {
-            background: transparent; color: var(--orange-main); border: 2px dashed var(--orange-main);
-            padding: 10px; width: 100%; border-radius: 8px; font-weight: 600; cursor: pointer; margin-bottom: 15px;
-        }
+        .btn-small { background-color: var(--green-btn); color: #fff; border: none; border-radius: 8px; width: 80px; padding: 12px 0; font-size: 12px; font-weight: 700; cursor: pointer; }
         
-        .total-box { text-align: right; font-size: 20px; font-weight: 700; color: var(--orange-main); padding-right: 5px; margin-bottom: 10px; }
+        .fake-input { width: 100%; padding: 12px; border: 1px solid var(--orange-main); border-radius: 8px; font-size: 14px; background-color: #fff; min-height: 46px; cursor: pointer; color: var(--text-gray); display: flex; align-items: center; }
+        .fake-input.preenchido { color: var(--text-dark); }
+        .dropdown-meios { border: 1px solid var(--orange-main); border-top: none; border-radius: 0 0 8px 8px; padding: 15px; background: #FFF5EC; margin-top: -5px; display: none; }
+        
+        .item-row { background: #fff; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; margin-bottom: 10px; position: relative;}
+        .btn-remove-item { position: absolute; top: 5px; right: 5px; background: var(--red-btn); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 10px; cursor: pointer;}
+        
+        .btn-add { background: transparent; color: var(--orange-main); border: 2px dashed var(--orange-main); padding: 10px; width: 100%; border-radius: 8px; font-weight: 600; cursor: pointer; margin-bottom: 15px; }
+        .total-box { text-align: right; font-size: 20px; font-weight: 700; color: var(--orange-main); }
 
-        .btn-primary {
-            background-color: var(--yellow-main); color: #fff; border: none; padding: 15px; width: 100%;
-            border-radius: 30px; font-size: 16px; font-weight: 700; cursor: pointer; text-transform: uppercase;
-            box-shadow: 0 4px 6px rgba(255, 203, 5, 0.3); margin-top: 10px;
-        }
-        .btn-primary:active { transform: translateY(2px); }
-        .btn-primary:disabled { background-color: #ccc; cursor: not-allowed; box-shadow: none; }
+        .btn-primary { background-color: var(--yellow-main); color: #fff; border: none; padding: 15px; width: 100%; border-radius: 30px; font-size: 14px; font-weight: 700; cursor: pointer; margin-bottom: 10px;}
+        .btn-secondary { background-color: var(--text-dark); color: #fff; border: none; padding: 12px; width: 100%; border-radius: 30px; font-size: 14px; font-weight: 700; cursor: pointer; margin-bottom: 10px;}
+        .btn-wpp { background-color: #25D366; color: #fff; border: none; padding: 12px; width: 100%; border-radius: 30px; font-size: 14px; font-weight: 700; cursor: pointer; margin-bottom: 10px;}
+
+        /* MODAL DE ARQUIVOS */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-box { background: #fff; width: 90%; max-width: 400px; border-radius: 12px; padding: 20px; max-height: 80vh; overflow-y: auto; }
+        .file-item { padding: 10px; border-bottom: 1px solid #eee; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+        .file-item:hover { background: #f0f0f0; }
+        .btn-close-modal { background: var(--text-dark); color: white; border: none; padding: 10px; width: 100%; border-radius: 8px; margin-top: 15px;}
     </style>
 </head>
 <body>
@@ -104,7 +72,13 @@
 <div class="app-container">
     <div class="header">
         <h1>📢 <span>PRO</span>TOM</h1>
-        <p>Projetos Sonoros - Gerador de Orçamentos</p>
+        <p>Projetos Sonoros - Mobile</p>
+    </div>
+
+    <div class="top-actions">
+        <button class="top-btn btn-limpar" onclick="limparCampos()">Limpar</button>
+        <button class="top-btn btn-abrir" onclick="abrirModalArquivos('abrir')">Abrir</button>
+        <button class="top-btn btn-ver" onclick="abrirModalArquivos('ver')">Ver Pasta</button>
     </div>
 
     <form id="orcamentoForm">
@@ -114,7 +88,7 @@
             <div class="input-group">
                 <label>Agência</label>
                 <div class="input-row">
-                    <input list="lista-agencias" id="agencia" placeholder="Carregando agências..." required onchange="carregarClientes()">
+                    <input list="lista-agencias" id="agencia" placeholder="Carregando..." required onchange="carregarClientes()">
                     <button type="button" class="btn-small" onclick="criarNovaAgencia()">+ Agência</button>
                 </div>
                 <datalist id="lista-agencias"></datalist>
@@ -122,39 +96,31 @@
             <div class="input-group">
                 <label>Cliente</label>
                 <div class="input-row">
-                    <input list="lista-clientes" id="cliente" placeholder="Selecione uma agência primeiro" required>
+                    <input list="lista-clientes" id="cliente" placeholder="Selecione a agência" required>
                     <button type="button" class="btn-small" onclick="criarNovoCliente()">+ Cliente</button>
                 </div>
                 <datalist id="lista-clientes"></datalist>
             </div>
             <div class="input-group">
                 <label>Campanha</label>
-                <input type="text" id="campanha" placeholder="Ex: TOP CURSOS 2026.1" required>
+                <input type="text" id="campanha" required>
             </div>
         </div>
 
         <div class="card card-orange">
             <h2 class="card-title">2. Veiculação</h2>
-            <div class="input-group">
-                <label>Praça</label>
-                <input list="lista-praca" id="praca" placeholder="Carregando..." required>
-                <datalist id="lista-praca"></datalist>
-            </div>
-            <div class="input-group">
-                <label>Período</label>
-                <input list="lista-periodo" id="periodo" placeholder="Carregando..." required>
-                <datalist id="lista-periodo"></datalist>
-            </div>
+            <div class="input-group"><label>Praça</label><input list="lista-praca" id="praca" required><datalist id="lista-praca"></datalist></div>
+            <div class="input-group"><label>Período</label><input list="lista-periodo" id="periodo" required><datalist id="lista-periodo"></datalist></div>
             <div class="input-group">
                 <label>Meios</label>
-                <div id="meios-display" class="fake-input" onclick="toggleMeios()">Selecione os meios...</div>
+                <div id="meios-display" class="fake-input" onclick="toggleMeios()">Selecione...</div>
                 <div id="meios-dropdown" class="dropdown-meios">
                     <div id="meios-lista"></div>
                     <div class="input-row" style="margin-top: 15px;">
-                        <input type="text" id="novo-meio" placeholder="Digitar outro meio...">
-                        <button type="button" class="btn-small" style="background-color: var(--orange-main);" onclick="adicionarMeio()">+ Add</button>
+                        <input type="text" id="novo-meio" placeholder="Add novo...">
+                        <button type="button" class="btn-small" onclick="adicionarMeio()">+ Add</button>
                     </div>
-                    <button type="button" class="btn-primary" style="padding: 10px; font-size: 14px; margin-top: 20px;" onclick="toggleMeios()">CONFIRMAR SELEÇÃO</button>
+                    <button type="button" class="btn-secondary" style="margin-top: 15px;" onclick="toggleMeios()">OK</button>
                 </div>
                 <input type="hidden" id="meios" required>
             </div>
@@ -164,343 +130,288 @@
             <h2 class="card-title">3. Itens do Orçamento</h2>
             <datalist id="lista-peca"></datalist>
             <datalist id="lista-desc"></datalist>
-            <div id="itemsContainer">
-                <div class="item-row">
-                    <div class="input-group">
-                        <label>Peça / Duração</label>
-                        <input list="lista-peca" class="item-peca" placeholder="Selecione ou digite..." required>
-                    </div>
-                    <div class="input-group">
-                        <label>Descrição</label>
-                        <input list="lista-desc" class="item-desc" placeholder="Selecione, cole ou edite..." required>
-                    </div>
-                    <div style="display: flex; gap: 10px;">
-                        <div class="input-group" style="flex: 2;"><label>Valor Unit. (R$)</label><input type="number" step="0.01" class="item-valor" placeholder="1250.00" oninput="calcularTotal()" required></div>
-                        <div class="input-group" style="flex: 1;"><label>Qtde.</label><input type="number" class="item-qtde" value="1" oninput="calcularTotal()" required></div>
-                    </div>
-                </div>
-            </div>
-            <button type="button" class="btn-add" id="btnAddItem">+ ADICIONAR ITEM (Max 9)</button>
+            <div id="itemsContainer"></div>
+            <button type="button" class="btn-add" id="btnAddItem">+ ADICIONAR ITEM</button>
             <div class="total-box">TOTAL: R$ <span id="valorTotal">0,00</span></div>
         </div>
 
         <div class="card card-orange">
             <h2 class="card-title">4. Condições Comerciais</h2>
-            <div class="input-group">
-                <label>Condição de Pagamento</label>
-                <input list="lista-condicao" id="condicao" placeholder="Carregando..." required>
-                <datalist id="lista-condicao"></datalist>
-            </div>
-            <div class="input-group">
-                <label>Prazo de Pagamento</label>
-                <input list="lista-prazoPag" id="prazoPag" placeholder="Carregando..." required>
-                <datalist id="lista-prazoPag"></datalist>
-            </div>
-            <div class="input-group">
-                <label>Validade da Proposta</label>
-                <input list="lista-validade" id="validade" placeholder="Carregando..." required>
-                <datalist id="lista-validade"></datalist>
-            </div>
-            <div class="input-group">
-                <label>Prazo de Entrega</label>
-                <input type="text" id="prazoEnt" value="A COMBINAR" required>
-            </div>
+            <div class="input-group"><label>Cond. Pagamento</label><input list="lista-condicao" id="condicao" required><datalist id="lista-condicao"></datalist></div>
+            <div class="input-group"><label>Prazo Pagamento</label><input list="lista-prazoPag" id="prazoPag" required><datalist id="lista-prazoPag"></datalist></div>
+            <div class="input-group"><label>Validade Proposta</label><input list="lista-validade" id="validade" required><datalist id="lista-validade"></datalist></div>
+            <div class="input-group"><label>Prazo Entrega</label><input type="text" id="prazoEnt" required></div>
         </div>
 
         <div class="card card-yellow">
             <h2 class="card-title">5. Dados Complementares</h2>
             <div class="input-group">
-                <label>Data</label>
-                <input type="text" id="dataAtual" class="item-data" placeholder="DD/MM/AAAA" required>
+                <label>Nº Orçamento (Gerado/Carregado)</label>
+                <input type="text" id="numOrcamento" readonly style="background-color: #eee; border-color: #ccc;">
             </div>
-            <div class="input-group">
-                <label>Nome do Contato</label>
-                <input type="text" id="nomeContato" class="item-title-case" placeholder="Nome do solicitante" required>
+            <div class="input-group" style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                <input type="checkbox" id="isAjuste" style="width: 20px; height: 20px;">
+                <label style="margin:0; font-size: 14px;">Orçamento de Ajuste (Adiciona _1, _2...)</label>
             </div>
-            <div class="input-group">
-                <label>Responsável Orçamento</label>
-                <input list="lista-responsavel" id="responsavel" placeholder="Carregando..." required>
-                <datalist id="lista-responsavel"></datalist>
-            </div>
+            <div class="input-group"><label>Data</label><input type="text" id="dataAtual" class="item-data" required></div>
+            <div class="input-group"><label>Nome do Contato</label><input type="text" id="nomeContato" class="item-title-case" required></div>
+            <div class="input-group"><label>Responsável</label><input list="lista-responsavel" id="responsavel" required><datalist id="lista-responsavel"></datalist></div>
         </div>
 
-        <button type="submit" class="btn-primary" id="btnSubmit">GERAR ORÇAMENTO</button>
+        <div class="card card-gray">
+            <h2 class="card-title">6. Gerar e Enviar</h2>
+            <button type="button" class="btn-primary" id="btnGerarPdf" onclick="gerarDocumentoPDF()">1. GERAR PDF NO DRIVE</button>
+            <button type="button" class="btn-secondary" id="btnEmail" onclick="enviarViaEmail()">2. ENVIAR RASCUNHO GMAIL</button>
+            <button type="button" class="btn-wpp" id="btnWpp" onclick="enviarViaWhatsapp()">3. ENVIAR LINK WHATSAPP</button>
+        </div>
 
     </form>
 </div>
 
+<div class="modal-overlay" id="modalArquivos">
+    <div class="modal-box">
+        <h3 id="modalTitle" style="margin-bottom: 15px; color: var(--orange-main);">Arquivos</h3>
+        <div id="modalList" style="margin-bottom: 15px;">Carregando...</div>
+        <button class="btn-close-modal" onclick="fecharModal()">Fechar</button>
+    </div>
+</div>
+
 <script>
     const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbzfeflsrPywqxil3eoPHKzjMdSKh_cTKVXQCLEkZLySmGaOrXmVIv9PNIHYxshuv-40/exec'; 
+    let linkPdfGerado = "";
+    let nomeArquivoGerado = "";
 
-    // --- FORMATAÇÕES INTELIGENTES NO TECLADO ---
+    // --- FORMATAÇÕES ---
     document.addEventListener('input', function(e) {
         if (e.target.tagName !== 'INPUT') return;
-
-        // Se for o campo "Nome do Contato", formata com Iniciais Maiúsculas (Title Case)
         if (e.target.classList.contains('item-title-case')) {
-            let start = e.target.selectionStart;
-            let end = e.target.selectionEnd;
+            let p = e.target.selectionStart;
             let preposicoes = ['de', 'da', 'do', 'das', 'dos', 'e'];
             let words = e.target.value.toLowerCase().split(' ');
             for (let i = 0; i < words.length; i++) {
-                if (words[i].length > 0) {
-                    if (i !== 0 && preposicoes.includes(words[i])) continue;
+                if (words[i].length > 0 && !(i !== 0 && preposicoes.includes(words[i]))) {
                     words[i] = words[i][0].toUpperCase() + words[i].substr(1);
                 }
             }
             e.target.value = words.join(' ');
-            e.target.setSelectionRange(start, end);
-            return;
-        }
-
-        // Se for Descrição ou Data, ignora a formatação.
-        if (e.target.classList.contains('item-desc') || e.target.classList.contains('item-data')) return;
-        
-        // Padrão: Força tudo para maiúsculas
-        if (e.target.type === 'text' || e.target.hasAttribute('list')) {
-            let start = e.target.selectionStart;
-            let end = e.target.selectionEnd;
-            e.target.value = e.target.value.toUpperCase();
-            e.target.setSelectionRange(start, end);
+            e.target.setSelectionRange(p, p);
+        } else if (!e.target.classList.contains('item-desc') && !e.target.classList.contains('item-data') && (e.target.type === 'text' || e.target.hasAttribute('list'))) {
+            let p = e.target.selectionStart; e.target.value = e.target.value.toUpperCase(); e.target.setSelectionRange(p, p);
         }
     });
 
-    // --- PREENCHER DATA ATUAL ---
-    function preencherData() {
-        const hoje = new Date();
-        const yyyy = hoje.getFullYear();
-        let mm = hoje.getMonth() + 1;
-        let dd = hoje.getDate();
-        if (dd < 10) dd = '0' + dd;
-        if (mm < 10) mm = '0' + mm;
-        document.getElementById('dataAtual').value = dd + '/' + mm + '/' + yyyy;
-    }
-
-    // --- AUTO-SAVE DE PALAVRAS NOVAS ---
-    function ativarAutoSave(idElemento, celulaPlanilha) {
-        const input = document.getElementById(idElemento);
-        input.addEventListener('blur', function() {
-            const val = this.value.trim().toUpperCase();
-            if (!val) return;
-            const datalist = document.getElementById(`lista-${idElemento}`);
-            let existe = false;
-            for (let option of datalist.options) { if (option.value.toUpperCase() === val) { existe = true; break; } }
-            if (!existe) {
-                const opt = document.createElement('option'); opt.value = val; datalist.appendChild(opt);
-                fetch(`${URL_SCRIPT}?rota=salvarOpcaoNova&celula=${celulaPlanilha}&valor=${encodeURIComponent(val)}`);
-            }
-        });
-    }
-
-    ativarAutoSave('praca', 'B13');
-    ativarAutoSave('periodo', 'B16');
-    ativarAutoSave('condicao', 'B25');
-    ativarAutoSave('prazoPag', 'B28');
-    ativarAutoSave('validade', 'B31');
-
-    // --- LOGICA DE MEIOS (MULTIPLE) ---
-    let meiosCadastrados = [];
-    function toggleMeios() {
-        const dd = document.getElementById('meios-dropdown');
-        dd.style.display = (dd.style.display === 'none' || dd.style.display === '') ? 'block' : 'none';
-    }
-    function renderizarMeios() {
-        let html = '';
-        meiosCadastrados.forEach(meio => {
-            html += `<label class="meio-checkbox-item"><input type="checkbox" value="${meio}" onchange="atualizarCampoMeios()"> ${meio}</label>`;
-        });
-        document.getElementById('meios-lista').innerHTML = html;
-        atualizarCampoMeios();
-    }
-    function atualizarCampoMeios() {
-        const checkboxes = document.querySelectorAll('#meios-lista input[type="checkbox"]:checked');
-        const display = document.getElementById('meios-display');
-        const inputOculto = document.getElementById('meios');
-        let marcados = Array.from(checkboxes).map(cb => cb.value);
-        if (marcados.length === 0) {
-            display.innerText = 'Selecione os meios...'; display.classList.remove('preenchido'); inputOculto.value = '';
-        } else {
-            let textoFormatado = marcados.join(', ') + '.';
-            display.innerText = textoFormatado; display.classList.add('preenchido'); inputOculto.value = textoFormatado;
-        }
-    }
-    function adicionarMeio() {
-        const inputNovo = document.getElementById('novo-meio');
-        const val = inputNovo.value.trim().toUpperCase();
-        if(!val) return;
-        if(!meiosCadastrados.includes(val)) {
-            meiosCadastrados.push(val); renderizarMeios();
-            const caixas = document.querySelectorAll('#meios-lista input[type="checkbox"]');
-            caixas[caixas.length - 1].checked = true; atualizarCampoMeios();
-            fetch(`${URL_SCRIPT}?rota=salvarOpcaoNova&celula=B19&valor=${encodeURIComponent(val)}`);
-        }
-        inputNovo.value = '';
-    }
-
-    // --- LÓGICA DE CALCULAR TOTAL ---
-    function calcularTotal() {
-        let total = 0;
-        document.querySelectorAll('.item-row').forEach(row => {
-            let valor = parseFloat(row.querySelector('.item-valor').value) || 0;
-            let qtde = parseInt(row.querySelector('.item-qtde').value) || 0;
-            total += (valor * qtde);
-        });
-        document.getElementById('valorTotal').innerText = total.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    // --- LIMPAR CAMPOS ---
+    function limparCampos() {
+        if(!confirm("Limpar todos os campos?")) return;
+        document.getElementById('orcamentoForm').reset();
+        document.getElementById('itemsContainer').innerHTML = '';
+        document.getElementById('valorTotal').innerText = '0,00';
+        document.getElementById('meios-display').innerText = 'Selecione...';
+        document.getElementById('meios-display').classList.remove('preenchido');
+        document.querySelectorAll('#meios-lista input').forEach(cb => cb.checked = false);
+        linkPdfGerado = ""; nomeArquivoGerado = "";
+        adicionarLinhaItem(); // Põe 1 item vazio
+        preencherData();
     }
 
     // --- CARREGAMENTO INICIAL ---
-    window.onload = () => { 
-        preencherData();
-        buscarAgencias(); 
-        buscarMenus(); 
-    };
+    window.onload = () => { preencherData(); buscarAgencias(); buscarMenus(); adicionarLinhaItem(); };
+
+    function preencherData() {
+        const h = new Date(); document.getElementById('dataAtual').value = `${String(h.getDate()).padStart(2,'0')}/${String(h.getMonth()+1).padStart(2,'0')}/${h.getFullYear()}`;
+    }
 
     function buscarMenus() {
-        fetch(`${URL_SCRIPT}?rota=getDropdowns`)
-            .then(res => res.json())
-            .then(dados => {
-                preencherDatalist('lista-praca', dados.praca); document.getElementById('praca').placeholder = "Ex: BAHIA E SERGIPE";
-                preencherDatalist('lista-periodo', dados.periodo); document.getElementById('periodo').placeholder = "Ex: 1 MÊS";
-                preencherDatalist('lista-condicao', dados.condicao); document.getElementById('condicao').placeholder = "Ex: 1X SEM JUROS";
-                preencherDatalist('lista-prazoPag', dados.prazoPag); document.getElementById('prazoPag').placeholder = "Ex: 30 DIAS";
-                preencherDatalist('lista-validade', dados.validade); document.getElementById('validade').placeholder = "Ex: 10 DIAS";
-                preencherDatalist('lista-peca', dados.peca);
-                preencherDatalist('lista-desc', dados.descricoes);
-                preencherDatalist('lista-responsavel', dados.responsavel); document.getElementById('responsavel').placeholder = "Selecione o responsável";
-
-                meiosCadastrados = dados.meios || []; renderizarMeios();
-            });
+        fetch(`${URL_SCRIPT}?rota=getDropdowns`).then(r=>r.json()).then(d => {
+            preencherDatalist('lista-praca', d.praca); preencherDatalist('lista-periodo', d.periodo);
+            preencherDatalist('lista-condicao', d.condicao); preencherDatalist('lista-prazoPag', d.prazoPag);
+            preencherDatalist('lista-validade', d.validade); preencherDatalist('lista-peca', d.peca);
+            preencherDatalist('lista-desc', d.descricoes); preencherDatalist('lista-responsavel', d.responsavel);
+            meiosCadastrados = d.meios || []; renderizarMeios();
+        });
     }
 
-    function preencherDatalist(idLista, arrayOpcoes) {
-        if (!arrayOpcoes) return;
-        let html = '';
-        arrayOpcoes.forEach(item => html += `<option value="${item}">`);
-        document.getElementById(idLista).innerHTML = html;
+    function preencherDatalist(id, arr) { if(arr) document.getElementById(id).innerHTML = arr.map(i => `<option value="${i}">`).join(''); }
+
+    function buscarAgencias(sel='') {
+        document.getElementById('agencia').placeholder = "Aguarde...";
+        fetch(`${URL_SCRIPT}?rota=getAgencias`).then(r=>r.json()).then(d => {
+            preencherDatalist('lista-agencias', d); document.getElementById('agencia').placeholder = "Selecione...";
+            if(sel) { document.getElementById('agencia').value = sel; carregarClientes(); }
+        });
     }
 
-    function buscarAgencias(selecionarNome = '') {
-        document.getElementById('agencia').placeholder = "Carregando agências...";
-        fetch(`${URL_SCRIPT}?rota=getAgencias`)
-            .then(res => res.json())
-            .then(dados => {
-                let html = ''; dados.forEach(n => html += `<option value="${n}">`);
-                document.getElementById('lista-agencias').innerHTML = html;
-                document.getElementById('agencia').placeholder = "Digite ou selecione a agência...";
-                if(selecionarNome) { document.getElementById('agencia').value = selecionarNome; carregarClientes(); }
-            });
-    }
-
-    function carregarClientes(selecionarNome = '') {
+    function carregarClientes(sel='') {
         const ag = document.getElementById('agencia').value;
-        const cliInput = document.getElementById('cliente');
-        const cliData = document.getElementById('lista-clientes');
-        if (!selecionarNome) cliInput.value = '';
-        if (!ag) { cliInput.placeholder = 'Selecione uma agência primeiro'; cliData.innerHTML = ''; return; }
-        cliInput.placeholder = 'Buscando clientes...';
-        fetch(`${URL_SCRIPT}?rota=getClientes&agencia=${encodeURIComponent(ag)}`)
-            .then(res => res.json())
-            .then(dados => {
-                let html = ''; dados.forEach(n => html += `<option value="${n}">`);
-                cliData.innerHTML = html; cliInput.placeholder = "Digite ou selecione o cliente...";
-                if(selecionarNome) cliInput.value = selecionarNome;
+        const cli = document.getElementById('cliente');
+        if(!sel) cli.value = '';
+        if(!ag) { cli.placeholder = 'Selecione Agência'; return; }
+        cli.placeholder = 'Buscando...';
+        fetch(`${URL_SCRIPT}?rota=getClientes&agencia=${encodeURIComponent(ag)}`).then(r=>r.json()).then(d => {
+            preencherDatalist('lista-clientes', d); cli.placeholder = "Selecione...";
+            if(sel) cli.value = sel;
+        });
+    }
+
+    // --- ABRIR E VER PASTA (MODAIS) ---
+    function abrirModalArquivos(acao) {
+        const ag = document.getElementById('agencia').value; const cli = document.getElementById('cliente').value;
+        if(!ag || !cli) return alert("Selecione Agência e Cliente primeiro.");
+        
+        document.getElementById('modalArquivos').style.display = 'flex';
+        document.getElementById('modalList').innerHTML = 'Buscando arquivos no Drive...';
+        document.getElementById('modalTitle').innerText = acao === 'abrir' ? 'Importar Planilha (Snapshot)' : 'Conteúdo da Pasta';
+
+        fetch(`${URL_SCRIPT}?rota=listarArquivosCliente&agencia=${encodeURIComponent(ag)}&cliente=${encodeURIComponent(cli)}`)
+        .then(r=>r.json()).then(res => {
+            if(res.erro) return document.getElementById('modalList').innerHTML = `<p style="color:red">Erro: ${res.erro}</p>`;
+            if(res.arquivos.length === 0) return document.getElementById('modalList').innerHTML = `<p>Nenhum arquivo encontrado.</p>`;
+            
+            let html = acao === 'ver' ? `<a href="${res.urlPasta}" target="_blank" style="display:block; margin-bottom:15px; color:var(--blue-btn); font-weight:bold;">🔗 ABRIR PASTA NO G-DRIVE</a>` : '';
+            
+            res.arquivos.forEach(f => {
+                let icon = f.tipo.includes('pdf') ? '📄 PDF ' : '📊 XLS ';
+                if(acao === 'abrir') {
+                    if(!f.tipo.includes('pdf')) { // Só planilhas para carregar
+                        html += `<div class="file-item" onclick="carregarOrcamentoDrive('${f.id}')">${icon} ${f.nome}</div>`;
+                    }
+                } else {
+                    html += `<div class="file-item" onclick="window.open('${f.url}', '_blank')">${icon} ${f.nome}</div>`;
+                }
             });
+            document.getElementById('modalList').innerHTML = html || '<p>Nenhuma planilha compatível encontrada.</p>';
+        });
     }
 
-    function criarNovaAgencia() {
-        let nomeAgencia = prompt("Digite o nome da NOVA AGÊNCIA:");
-        if (!nomeAgencia) return;
-        nomeAgencia = nomeAgencia.trim().toUpperCase();
-        document.getElementById('agencia').value = ''; document.getElementById('agencia').placeholder = "Criando pasta...";
-        fetch(`${URL_SCRIPT}?rota=criarAgencia&nome=${encodeURIComponent(nomeAgencia)}`)
-        .then(res => res.json())
-        .then(res => { if (res.erro) { alert("Erro: " + res.erro); return; } alert("Agência criada!"); buscarAgencias(res.nome); });
+    function fecharModal() { document.getElementById('modalArquivos').style.display = 'none'; }
+
+    function carregarOrcamentoDrive(id) {
+        document.getElementById('modalList').innerHTML = 'Lendo planilha... Aguarde (pode demorar).';
+        fetch(`${URL_SCRIPT}?rota=carregarOrcamento&id=${id}`).then(r=>r.json()).then(res => {
+            if(res.erro) return alert("Erro ao carregar: " + res.erro);
+            
+            let d = res.dados;
+            document.getElementById('numOrcamento').value = d.numOrcamento;
+            document.getElementById('campanha').value = d.campanha;
+            document.getElementById('praca').value = d.praca;
+            document.getElementById('periodo').value = d.periodo;
+            document.getElementById('condicao').value = d.condicao;
+            document.getElementById('prazoPag').value = d.prazoPag;
+            document.getElementById('validade').value = d.validade;
+            document.getElementById('prazoEnt').value = d.prazoEnt;
+            if(d.data) document.getElementById('dataAtual').value = d.data;
+
+            // Meios
+            document.getElementById('meios').value = d.meios;
+            document.getElementById('meios-display').innerText = d.meios || 'Selecione...';
+            if(d.meios) document.getElementById('meios-display').classList.add('preenchido');
+            
+            // Itens
+            document.getElementById('itemsContainer').innerHTML = '';
+            itemCount = 0;
+            d.itens.forEach(it => { adicionarLinhaItem(it.peca, it.desc, it.valor, it.qtde); });
+            calcularTotal();
+            fecharModal();
+            alert("Dados carregados com sucesso! Verifique a caixa 'Orçamento de Ajuste' se for gerar uma nova versão.");
+        });
     }
 
-    function criarNovoCliente() {
-        const ag = document.getElementById('agencia').value;
-        if (!ag) { alert("Selecione uma Agência primeiro!"); return; }
-        let nomeCliente = prompt(`Digite o nome do NOVO CLIENTE:\n${ag}`);
-        if (!nomeCliente) return;
-        nomeCliente = nomeCliente.trim().toUpperCase();
-        document.getElementById('cliente').value = ''; document.getElementById('cliente').placeholder = "Criando pasta...";
-        fetch(`${URL_SCRIPT}?rota=criarCliente&agencia=${encodeURIComponent(ag)}&nome=${encodeURIComponent(nomeCliente)}`)
-        .then(res => res.json())
-        .then(res => { if (res.erro) { alert("Erro: " + res.erro); return; } alert("Cliente criado!"); carregarClientes(res.nome); });
-    }
-
-    // --- ADICIONAR ITENS ---
-    const btnAddItem = document.getElementById('btnAddItem');
-    const itemsContainer = document.getElementById('itemsContainer');
-    let itemCount = 1;
-
-    btnAddItem.addEventListener('click', () => {
-        if (itemCount >= 9) { alert("Limite máximo: 9 itens."); return; }
-        const newItem = document.createElement('div');
-        newItem.className = 'item-row';
-        newItem.innerHTML = `
-            <div class="input-group">
-                <label>Peça / Duração</label>
-                <input list="lista-peca" class="item-peca" placeholder="Selecione ou digite..." required>
-            </div>
-            <div class="input-group">
-                <label>Descrição</label>
-                <input list="lista-desc" class="item-desc" placeholder="Selecione, cole ou edite..." required>
-            </div>
+    // --- ITENS ---
+    let itemCount = 0;
+    function adicionarLinhaItem(p='', d='', v='', q='1') {
+        if (itemCount >= 9) return alert("Limite de 9 itens.");
+        const div = document.createElement('div'); div.className = 'item-row';
+        div.innerHTML = `
+            <button type="button" class="btn-remove-item" onclick="this.parentElement.remove(); calcularTotal();">X</button>
+            <div class="input-group"><label>Peça</label><input list="lista-peca" class="item-peca" value="${p}" required></div>
+            <div class="input-group"><label>Descrição</label><input list="lista-desc" class="item-desc" value="${d}" required></div>
             <div style="display: flex; gap: 10px;">
-                <div class="input-group" style="flex: 2;"><label>Valor Unit. (R$)</label><input type="number" step="0.01" class="item-valor" placeholder="1250.00" oninput="calcularTotal()" required></div>
-                <div class="input-group" style="flex: 1;"><label>Qtde.</label><input type="number" class="item-qtde" value="1" oninput="calcularTotal()" required></div>
+                <div class="input-group" style="flex:2;"><label>Valor (R$)</label><input type="number" step="0.01" class="item-valor" value="${v}" oninput="calcularTotal()" required></div>
+                <div class="input-group" style="flex:1;"><label>Qtde</label><input type="number" class="item-qtde" value="${q}" oninput="calcularTotal()" required></div>
             </div>`;
-        itemsContainer.appendChild(newItem);
-        itemCount++;
-    });
+        document.getElementById('itemsContainer').appendChild(div);
+        itemCount++; calcularTotal();
+    }
+    document.getElementById('btnAddItem').addEventListener('click', () => adicionarLinhaItem());
 
-    document.getElementById('orcamentoForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const btnSubmit = document.getElementById('btnSubmit');
-        btnSubmit.innerText = 'ENVIANDO PARA O DRIVE...';
-        btnSubmit.disabled = true;
+    function calcularTotal() {
+        let t = 0;
+        document.querySelectorAll('.item-row').forEach(r => {
+            t += (parseFloat(r.querySelector('.item-valor').value)||0) * (parseInt(r.querySelector('.item-qtde').value)||0);
+        });
+        document.getElementById('valorTotal').innerText = t.toLocaleString('pt-BR', {minimumFractionDigits:2});
+    }
 
+    // --- MEIOS ---
+    function toggleMeios() { const dd = document.getElementById('meios-dropdown'); dd.style.display = dd.style.display === 'block' ? 'none' : 'block'; }
+    function renderizarMeios() {
+        document.getElementById('meios-lista').innerHTML = meiosCadastrados.map(m => `<label class="meio-checkbox-item"><input type="checkbox" value="${m}" onchange="atualizarCampoMeios()"> ${m}</label>`).join('');
+    }
+    function atualizarCampoMeios() {
+        const marc = Array.from(document.querySelectorAll('#meios-lista input:checked')).map(cb => cb.value);
+        const disp = document.getElementById('meios-display');
+        if(!marc.length) { disp.innerText = 'Selecione...'; disp.classList.remove('preenchido'); document.getElementById('meios').value=''; }
+        else { let txt = marc.join(', ') + '.'; disp.innerText = txt; disp.classList.add('preenchido'); document.getElementById('meios').value = txt; }
+    }
+    function adicionarMeio() {
+        const v = document.getElementById('novo-meio').value.trim().toUpperCase();
+        if(v && !meiosCadastrados.includes(v)) { meiosCadastrados.push(v); renderizarMeios(); fetch(`${URL_SCRIPT}?rota=salvarOpcaoNova&celula=B19&valor=${encodeURIComponent(v)}`); }
+        document.getElementById('novo-meio').value = '';
+    }
+
+    // --- ENVIOS ---
+    function coletarDadosForm() {
         const itens = [];
-        document.querySelectorAll('.item-row').forEach(row => {
-            itens.push({
-                peca: row.querySelector('.item-peca').value.toUpperCase(),
-                desc: row.querySelector('.item-desc').value, // Mantém do jeito que digitou
-                valor: row.querySelector('.item-valor').value,
-                qtde: row.querySelector('.item-qtde').value
-            });
+        document.querySelectorAll('.item-row').forEach(r => {
+            itens.push({ peca: r.querySelector('.item-peca').value.toUpperCase(), desc: r.querySelector('.item-desc').value, valor: r.querySelector('.item-valor').value, qtde: r.querySelector('.item-qtde').value });
         });
-
-        const formData = {
-            rota: 'gerarPDF', 
-            agencia: document.getElementById('agencia').value.toUpperCase(),
-            cliente: document.getElementById('cliente').value.toUpperCase(),
-            campanha: document.getElementById('campanha').value.toUpperCase(),
-            praca: document.getElementById('praca').value.toUpperCase(),
-            periodo: document.getElementById('periodo').value.toUpperCase(),
-            meios: document.getElementById('meios').value, 
-            condicao: document.getElementById('condicao').value.toUpperCase(),
-            prazoPag: document.getElementById('prazoPag').value.toUpperCase(),
-            validade: document.getElementById('validade').value.toUpperCase(),
-            prazoEnt: document.getElementById('prazoEnt').value.toUpperCase(),
-            dataAtual: document.getElementById('dataAtual').value,
-            nomeContato: document.getElementById('nomeContato').value,
-            responsavel: document.getElementById('responsavel').value.toUpperCase(),
-            itens: itens
+        return {
+            agencia: document.getElementById('agencia').value.toUpperCase(), cliente: document.getElementById('cliente').value.toUpperCase(),
+            campanha: document.getElementById('campanha').value.toUpperCase(), praca: document.getElementById('praca').value.toUpperCase(),
+            periodo: document.getElementById('periodo').value.toUpperCase(), meios: document.getElementById('meios').value,
+            condicao: document.getElementById('condicao').value.toUpperCase(), prazoPag: document.getElementById('prazoPag').value.toUpperCase(),
+            validade: document.getElementById('validade').value.toUpperCase(), prazoEnt: document.getElementById('prazoEnt').value.toUpperCase(),
+            dataAtual: document.getElementById('dataAtual').value, nomeContato: document.getElementById('nomeContato').value,
+            responsavel: document.getElementById('responsavel').value.toUpperCase(), isAjuste: document.getElementById('isAjuste').checked,
+            numBase: document.getElementById('numOrcamento').value, itens: itens
         };
+    }
 
-        fetch(URL_SCRIPT, { method: 'POST', body: JSON.stringify(formData) })
-        .then(res => res.json())
-        .then(response => {
-            alert('Enviado com sucesso! Dados prontos para o PDF.');
-            btnSubmit.innerText = 'GERAR ORÇAMENTO';
-            btnSubmit.disabled = false;
-        }).catch(err => {
-            alert("Requisição enviada.");
-            btnSubmit.innerText = 'GERAR ORÇAMENTO';
-            btnSubmit.disabled = false;
+    function gerarDocumentoPDF() {
+        if(!document.getElementById('orcamentoForm').checkValidity()) return alert("Preencha os campos obrigatórios primeiro.");
+        const btn = document.getElementById('btnGerarPdf'); btn.innerText = "GERANDO... AGUARDE"; btn.disabled = true;
+        let fd = coletarDadosForm(); fd.rota = 'gerarPDF';
+        
+        fetch(URL_SCRIPT, { method:'POST', body: JSON.stringify(fd) }).then(r=>r.json()).then(res => {
+            btn.innerText = "1. GERAR PDF NO DRIVE"; btn.disabled = false;
+            if(res.erro) return alert("Erro: " + res.erro);
+            
+            document.getElementById('numOrcamento').value = res.orcNum;
+            linkPdfGerado = res.url; nomeArquivoGerado = res.fileName;
+            
+            if(confirm("PDF Gerado com sucesso!\nNº: " + res.orcNum + "\n\nDeseja abrir o PDF agora?")) window.open(res.url, '_blank');
+        }).catch(e=>{ btn.innerText = "1. GERAR PDF NO DRIVE"; btn.disabled = false; alert("Falha na conexão."); });
+    }
+
+    function enviarViaEmail() {
+        if(!nomeArquivoGerado) return alert("Gere o PDF primeiro (Botão 1) antes de enviar por e-mail.");
+        const btn = document.getElementById('btnEmail'); btn.innerText = "CRIANDO RASCUNHO..."; btn.disabled = true;
+        let fd = coletarDadosForm(); fd.rota = 'enviarEmail'; fd.fileName = nomeArquivoGerado;
+        
+        fetch(URL_SCRIPT, { method:'POST', body: JSON.stringify(fd) }).then(r=>r.json()).then(res => {
+            btn.innerText = "2. ENVIAR RASCUNHO GMAIL"; btn.disabled = false;
+            if(res.erro) return alert("Erro: " + res.erro);
+            alert("Rascunho criado no Gmail da Protom com sucesso!");
         });
-    });
+    }
+
+    function enviarViaWhatsapp() {
+        if(!linkPdfGerado) return alert("Gere o PDF primeiro (Botão 1) para obter o link do arquivo.");
+        let cli = document.getElementById('cliente').value.split(' - ')[1] || "Cliente";
+        let camp = document.getElementById('campanha').value;
+        let txt = `Olá! Segue o link do orçamento da campanha *${camp}* para a *${cli}*.\n\n📄 *Acessar PDF:* ${linkPdfGerado}`;
+        window.open(`https://wa.me/5571999660529?text=${encodeURIComponent(txt)}`, '_blank');
+    }
 </script>
 </body>
 </html>
