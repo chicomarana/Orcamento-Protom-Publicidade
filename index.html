@@ -14,7 +14,7 @@
             --text-dark: #333333;
             --text-gray: #666666;
             --border-color: #E0E0E0;
-            --green-btn: #4CAF50; /* Novo verde para os botões */
+            --green-btn: #4CAF50;
             --green-btn-hover: #45a049;
         }
 
@@ -93,13 +93,12 @@
             box-shadow: 0 0 0 2px rgba(255, 203, 5, 0.3);
         }
 
-        /* Botões padronizados verdes */
         .btn-small {
             background-color: var(--green-btn);
             color: #ffffff;
             border: none;
             border-radius: 8px;
-            width: 100px; /* Largura fixa igual para ambos */
+            width: 100px; 
             font-size: 12px;
             font-weight: 700;
             cursor: pointer;
@@ -294,7 +293,7 @@
             });
     }
 
-    // --- CRIAÇÃO DE AGÊNCIA E CLIENTE ---
+    // --- CRIAÇÃO DE AGÊNCIA E CLIENTE (MÉTODO GET) ---
     function criarNovaAgencia() {
         let nomeAgencia = prompt("Digite o nome da NOVA AGÊNCIA:");
         if (!nomeAgencia) return;
@@ -303,15 +302,16 @@
         document.getElementById('agencia').value = '';
         document.getElementById('agencia').placeholder = "Criando pasta no Drive...";
 
-        fetch(URL_SCRIPT, {
-            method: 'POST',
-            body: JSON.stringify({ rota: 'criarAgencia', nome: nomeAgencia })
-        })
+        fetch(`${URL_SCRIPT}?rota=criarAgencia&nome=${encodeURIComponent(nomeAgencia)}`)
         .then(res => res.json())
         .then(res => {
             if (res.erro) { alert("Erro: " + res.erro); return; }
             alert("Agência criada com sucesso: " + res.nome);
-            buscarAgencias(res.nome); // Recarrega e já seleciona a nova
+            buscarAgencias(res.nome);
+        })
+        .catch(err => {
+            alert("Erro ao conectar com o Drive.");
+            document.getElementById('agencia').placeholder = "Erro na criação.";
         });
     }
 
@@ -326,15 +326,16 @@
         document.getElementById('cliente').value = '';
         document.getElementById('cliente').placeholder = "Criando pasta no Drive...";
 
-        fetch(URL_SCRIPT, {
-            method: 'POST',
-            body: JSON.stringify({ rota: 'criarCliente', agencia: ag, nome: nomeCliente })
-        })
+        fetch(`${URL_SCRIPT}?rota=criarCliente&agencia=${encodeURIComponent(ag)}&nome=${encodeURIComponent(nomeCliente)}`)
         .then(res => res.json())
         .then(res => {
             if (res.erro) { alert("Erro: " + res.erro); return; }
             alert("Cliente criado com sucesso: " + res.nome);
-            carregarClientes(res.nome); // Recarrega e já seleciona o novo
+            carregarClientes(res.nome);
+        })
+        .catch(err => {
+            alert("Erro ao conectar com o Drive.");
+            document.getElementById('cliente').placeholder = "Erro na criação.";
         });
     }
 
@@ -396,7 +397,7 @@
             btnSubmit.innerText = 'GERAR ORÇAMENTO';
             btnSubmit.disabled = false;
         }).catch(err => {
-            alert("Requisição enviada.");
+            alert("Requisição enviada ao servidor.");
             btnSubmit.innerText = 'GERAR ORÇAMENTO';
             btnSubmit.disabled = false;
         });
