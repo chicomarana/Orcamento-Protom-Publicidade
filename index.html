@@ -145,16 +145,14 @@
             
             <div class="input-group">
                 <label>Agência</label>
-                <select id="agencia" required onchange="carregarClientes()">
-                    <option value="">Carregando agências...</option>
-                </select>
+                <input list="lista-agencias" id="agencia" placeholder="Carregando agências..." required onchange="carregarClientes()">
+                <datalist id="lista-agencias"></datalist>
             </div>
 
             <div class="input-group">
                 <label>Cliente</label>
-                <select id="cliente" required>
-                    <option value="">Selecione uma agência primeiro</option>
-                </select>
+                <input list="lista-clientes" id="cliente" placeholder="Selecione uma agência primeiro" required>
+                <datalist id="lista-clientes"></datalist>
             </div>
 
             <div class="input-group">
@@ -230,46 +228,51 @@
     const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbzfeflsrPywqxil3eoPHKzjMdSKh_cTKVXQCLEkZLySmGaOrXmVIv9PNIHYxshuv-40/exec'; 
 
     // ----------------------------------------------------------------------
-    // 2. BUSCA DINÂMICA DE AGÊNCIAS E CLIENTES
+    // 2. BUSCA DINÂMICA DE AGÊNCIAS E CLIENTES (COM AUTOCOMPLETAR)
     // ----------------------------------------------------------------------
     
-    // Assim que a tela carregar, busca as Agências
     window.onload = () => {
         fetch(`${URL_SCRIPT}?rota=getAgencias`)
             .then(res => res.json())
             .then(dados => {
-                let html = '<option value="">Selecione a Agência</option>';
-                dados.forEach(n => html += `<option value="${n}">${n}</option>`);
-                document.getElementById('agencia').innerHTML = html;
+                let html = '';
+                dados.forEach(n => html += `<option value="${n}">`);
+                document.getElementById('lista-agencias').innerHTML = html;
+                document.getElementById('agencia').placeholder = "Digite ou selecione a agência...";
             })
             .catch(err => {
                 console.error("Erro ao buscar agências:", err);
-                document.getElementById('agencia').innerHTML = '<option value="">Erro ao carregar do Drive</option>';
+                document.getElementById('agencia').placeholder = 'Erro ao carregar do Drive';
             });
     };
 
-    // Quando a agência é selecionada, busca os clientes correspondentes
     function carregarClientes() {
         const ag = document.getElementById('agencia').value;
-        const cliSelect = document.getElementById('cliente');
+        const cliInput = document.getElementById('cliente');
+        const cliData = document.getElementById('lista-clientes');
+        
+        // Limpa o cliente atual sempre que trocar a agência
+        cliInput.value = '';
         
         if (!ag) {
-            cliSelect.innerHTML = '<option value="">Selecione uma agência primeiro</option>';
+            cliInput.placeholder = 'Selecione uma agência primeiro';
+            cliData.innerHTML = '';
             return;
         }
 
-        cliSelect.innerHTML = '<option>Buscando clientes no Drive...</option>';
+        cliInput.placeholder = 'Buscando clientes no Drive...';
 
         fetch(`${URL_SCRIPT}?rota=getClientes&agencia=${encodeURIComponent(ag)}`)
             .then(res => res.json())
             .then(dados => {
-                let html = '<option value="">Selecione o Cliente</option>';
-                dados.forEach(n => html += `<option value="${n}">${n}</option>`);
-                cliSelect.innerHTML = html;
+                let html = '';
+                dados.forEach(n => html += `<option value="${n}">`);
+                cliData.innerHTML = html;
+                cliInput.placeholder = "Digite ou selecione o cliente...";
             })
             .catch(err => {
                 console.error("Erro ao buscar clientes:", err);
-                cliSelect.innerHTML = '<option value="">Erro ao carregar do Drive</option>';
+                cliInput.placeholder = 'Erro ao carregar do Drive';
             });
     }
 
