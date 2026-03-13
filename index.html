@@ -90,13 +90,8 @@
             text-transform: uppercase;
         }
 
-        .card-orange .input-group input, .card-orange .input-group select {
-            border-color: var(--orange-main);
-        }
-
-        .input-group input:focus, .input-group select:focus {
-            box-shadow: 0 0 0 2px rgba(255, 203, 5, 0.3);
-        }
+        .card-orange .input-group input, .card-orange .input-group select { border-color: var(--orange-main); }
+        .input-group input:focus, .input-group select:focus { box-shadow: 0 0 0 2px rgba(255, 203, 5, 0.3); }
 
         .btn-small {
             background-color: var(--green-btn);
@@ -112,45 +107,35 @@
             transition: background-color 0.2s;
         }
 
-        .btn-small:active {
-            background-color: var(--green-btn-hover);
-            transform: translateY(2px);
+        .btn-small:active { background-color: var(--green-btn-hover); transform: translateY(2px); }
+
+        /* MULTI-SELECT CUSTOMIZADO PARA MEIOS */
+        .fake-input {
+            width: 100%; padding: 12px; border: 1px solid var(--orange-main); border-radius: 8px;
+            font-size: 14px; background-color: #fff; min-height: 46px; cursor: pointer; color: var(--text-gray);
+            display: flex; align-items: center;
         }
+        .fake-input.preenchido { color: var(--text-dark); }
+        .dropdown-meios {
+            border: 1px solid var(--orange-main); border-top: none; border-radius: 0 0 8px 8px;
+            padding: 15px; background: #FFF5EC; margin-top: -5px; display: none;
+        }
+        .meio-checkbox-item { display: flex; align-items: center; margin-bottom: 10px; font-size: 14px; color: var(--text-dark); }
+        .meio-checkbox-item input { margin-right: 10px; width: 20px; height: 20px; accent-color: var(--orange-main); }
 
         .item-row {
-            background: #fff;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 10px;
-            margin-bottom: 10px;
+            background: #fff; border: 1px solid var(--border-color); border-radius: 8px;
+            padding: 10px; margin-bottom: 10px;
         }
         .btn-add {
-            background: transparent;
-            color: var(--orange-main);
-            border: 2px dashed var(--orange-main);
-            padding: 10px;
-            width: 100%;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-bottom: 15px;
+            background: transparent; color: var(--orange-main); border: 2px dashed var(--orange-main);
+            padding: 10px; width: 100%; border-radius: 8px; font-weight: 600; cursor: pointer; margin-bottom: 15px;
         }
-
         .btn-primary {
-            background-color: var(--yellow-main);
-            color: #fff;
-            border: none;
-            padding: 15px;
-            width: 100%;
-            border-radius: 30px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            text-transform: uppercase;
-            box-shadow: 0 4px 6px rgba(255, 203, 5, 0.3);
-            margin-top: 10px;
+            background-color: var(--yellow-main); color: #fff; border: none; padding: 15px; width: 100%;
+            border-radius: 30px; font-size: 16px; font-weight: 700; cursor: pointer; text-transform: uppercase;
+            box-shadow: 0 4px 6px rgba(255, 203, 5, 0.3); margin-top: 10px;
         }
-        
         .btn-primary:active { transform: translateY(2px); }
         .btn-primary:disabled { background-color: #ccc; cursor: not-allowed; box-shadow: none; }
     </style>
@@ -205,10 +190,22 @@
                 <input list="lista-periodo" id="periodo" placeholder="Carregando..." required>
                 <datalist id="lista-periodo"></datalist>
             </div>
+            
             <div class="input-group">
-                <label>Meios (Pode digitar vários com vírgula)</label>
-                <input list="lista-meios" id="meios" placeholder="Carregando..." required>
-                <datalist id="lista-meios"></datalist>
+                <label>Meios</label>
+                <div id="meios-display" class="fake-input" onclick="toggleMeios()">Selecione os meios...</div>
+                
+                <div id="meios-dropdown" class="dropdown-meios">
+                    <div id="meios-lista"></div>
+                    
+                    <div class="input-row" style="margin-top: 15px;">
+                        <input type="text" id="novo-meio" placeholder="Digitar outro meio...">
+                        <button type="button" class="btn-small" style="background-color: var(--orange-main);" onclick="adicionarMeio()">+ Add</button>
+                    </div>
+                    
+                    <button type="button" class="btn-primary" style="padding: 10px; font-size: 14px; margin-top: 20px;" onclick="toggleMeios()">CONFIRMAR SELEÇÃO</button>
+                </div>
+                <input type="hidden" id="meios" required>
             </div>
         </div>
 
@@ -270,7 +267,95 @@
         }
     });
 
-    // --- CARREGAMENTO INICIAL (AGÊNCIAS E MENUS INTELIGENTES) ---
+    // --- AUTO-SAVE DE PALAVRAS NOVAS ---
+    function ativarAutoSave(idElemento, celulaPlanilha) {
+        const input = document.getElementById(idElemento);
+        input.addEventListener('blur', function() {
+            const val = this.value.trim().toUpperCase();
+            if (!val) return;
+
+            const datalist = document.getElementById(`lista-${idElemento}`);
+            let existe = false;
+            for (let option of datalist.options) {
+                if (option.value.toUpperCase() === val) { existe = true; break; }
+            }
+
+            // Se for uma palavra nova, adiciona na lista local e envia pro Google Script!
+            if (!existe) {
+                const opt = document.createElement('option');
+                opt.value = val;
+                datalist.appendChild(opt);
+                fetch(`${URL_SCRIPT}?rota=salvarOpcaoNova&celula=${celulaPlanilha}&valor=${encodeURIComponent(val)}`);
+            }
+        });
+    }
+
+    ativarAutoSave('praca', 'B13');
+    ativarAutoSave('periodo', 'B16');
+    ativarAutoSave('condicao', 'B25');
+    ativarAutoSave('prazoPag', 'B28');
+    ativarAutoSave('validade', 'B31');
+
+    // --- LOGICA DE MEIOS (MULTIPLE) ---
+    let meiosCadastrados = [];
+
+    function toggleMeios() {
+        const dd = document.getElementById('meios-dropdown');
+        dd.style.display = (dd.style.display === 'none' || dd.style.display === '') ? 'block' : 'none';
+    }
+
+    function renderizarMeios() {
+        let html = '';
+        meiosCadastrados.forEach(meio => {
+            html += `<label class="meio-checkbox-item">
+                        <input type="checkbox" value="${meio}" onchange="atualizarCampoMeios()"> ${meio}
+                     </label>`;
+        });
+        document.getElementById('meios-lista').innerHTML = html;
+        atualizarCampoMeios(); // Atualiza a exibição se já houver algo marcado
+    }
+
+    function atualizarCampoMeios() {
+        const checkboxes = document.querySelectorAll('#meios-lista input[type="checkbox"]:checked');
+        const display = document.getElementById('meios-display');
+        const inputOculto = document.getElementById('meios');
+        
+        let marcados = Array.from(checkboxes).map(cb => cb.value);
+        
+        if (marcados.length === 0) {
+            display.innerText = 'Selecione os meios...';
+            display.classList.remove('preenchido');
+            inputOculto.value = '';
+        } else {
+            // Junta com vírgula e bota o ponto final
+            let textoFormatado = marcados.join(', ') + '.';
+            display.innerText = textoFormatado;
+            display.classList.add('preenchido');
+            inputOculto.value = textoFormatado;
+        }
+    }
+
+    function adicionarMeio() {
+        const inputNovo = document.getElementById('novo-meio');
+        const val = inputNovo.value.trim().toUpperCase();
+        if(!val) return;
+
+        if(!meiosCadastrados.includes(val)) {
+            meiosCadastrados.push(val);
+            renderizarMeios();
+            
+            // Marca a caixinha recém criada
+            const caixas = document.querySelectorAll('#meios-lista input[type="checkbox"]');
+            caixas[caixas.length - 1].checked = true;
+            atualizarCampoMeios();
+
+            // Salva na planilha via Auto-Save
+            fetch(`${URL_SCRIPT}?rota=salvarOpcaoNova&celula=B19&valor=${encodeURIComponent(val)}`);
+        }
+        inputNovo.value = '';
+    }
+
+    // --- CARREGAMENTO INICIAL ---
     window.onload = () => {
         buscarAgencias();
         buscarMenus();
@@ -280,23 +365,15 @@
         fetch(`${URL_SCRIPT}?rota=getDropdowns`)
             .then(res => res.json())
             .then(dados => {
-                preencherDatalist('lista-praca', dados.praca);
-                document.getElementById('praca').placeholder = "Ex: BAHIA E SERGIPE";
-
-                preencherDatalist('lista-periodo', dados.periodo);
-                document.getElementById('periodo').placeholder = "Ex: 1 MÊS";
-
-                preencherDatalist('lista-meios', dados.meios);
-                document.getElementById('meios').placeholder = "Ex: RÁDIO, SPOT";
-
-                preencherDatalist('lista-condicao', dados.condicao);
-                document.getElementById('condicao').placeholder = "Ex: 1X SEM JUROS";
-
-                preencherDatalist('lista-prazoPag', dados.prazoPag);
-                document.getElementById('prazoPag').placeholder = "Ex: 30 DIAS";
-
-                preencherDatalist('lista-validade', dados.validade);
-                document.getElementById('validade').placeholder = "Ex: 10 DIAS";
+                preencherDatalist('lista-praca', dados.praca); document.getElementById('praca').placeholder = "Ex: BAHIA E SERGIPE";
+                preencherDatalist('lista-periodo', dados.periodo); document.getElementById('periodo').placeholder = "Ex: 1 MÊS";
+                preencherDatalist('lista-condicao', dados.condicao); document.getElementById('condicao').placeholder = "Ex: 1X SEM JUROS";
+                preencherDatalist('lista-prazoPag', dados.prazoPag); document.getElementById('prazoPag').placeholder = "Ex: 30 DIAS";
+                preencherDatalist('lista-validade', dados.validade); document.getElementById('validade').placeholder = "Ex: 10 DIAS";
+                
+                // Trata a caixa especial de Meios
+                meiosCadastrados = dados.meios || [];
+                renderizarMeios();
             });
     }
 
@@ -312,14 +389,10 @@
         fetch(`${URL_SCRIPT}?rota=getAgencias`)
             .then(res => res.json())
             .then(dados => {
-                let html = '';
-                dados.forEach(n => html += `<option value="${n}">`);
+                let html = ''; dados.forEach(n => html += `<option value="${n}">`);
                 document.getElementById('lista-agencias').innerHTML = html;
                 document.getElementById('agencia').placeholder = "Digite ou selecione a agência...";
-                if(selecionarNome) {
-                    document.getElementById('agencia').value = selecionarNome;
-                    carregarClientes();
-                }
+                if(selecionarNome) { document.getElementById('agencia').value = selecionarNome; carregarClientes(); }
             });
     }
 
@@ -329,20 +402,14 @@
         const cliData = document.getElementById('lista-clientes');
         
         if (!selecionarNome) cliInput.value = '';
-        if (!ag) {
-            cliInput.placeholder = 'Selecione uma agência primeiro';
-            cliData.innerHTML = '';
-            return;
-        }
+        if (!ag) { cliInput.placeholder = 'Selecione uma agência primeiro'; cliData.innerHTML = ''; return; }
 
-        cliInput.placeholder = 'Buscando clientes no Drive...';
+        cliInput.placeholder = 'Buscando clientes...';
         fetch(`${URL_SCRIPT}?rota=getClientes&agencia=${encodeURIComponent(ag)}`)
             .then(res => res.json())
             .then(dados => {
-                let html = '';
-                dados.forEach(n => html += `<option value="${n}">`);
-                cliData.innerHTML = html;
-                cliInput.placeholder = "Digite ou selecione o cliente...";
+                let html = ''; dados.forEach(n => html += `<option value="${n}">`);
+                cliData.innerHTML = html; cliInput.placeholder = "Digite ou selecione o cliente...";
                 if(selecionarNome) cliInput.value = selecionarNome;
             });
     }
@@ -351,41 +418,26 @@
     function criarNovaAgencia() {
         let nomeAgencia = prompt("Digite o nome da NOVA AGÊNCIA:");
         if (!nomeAgencia) return;
-        
         nomeAgencia = nomeAgencia.trim().toUpperCase();
-        document.getElementById('agencia').value = '';
-        document.getElementById('agencia').placeholder = "Criando pasta...";
-
+        document.getElementById('agencia').value = ''; document.getElementById('agencia').placeholder = "Criando pasta...";
         fetch(`${URL_SCRIPT}?rota=criarAgencia&nome=${encodeURIComponent(nomeAgencia)}`)
         .then(res => res.json())
-        .then(res => {
-            if (res.erro) { alert("Erro: " + res.erro); return; }
-            alert("Agência criada com sucesso!");
-            buscarAgencias(res.nome);
-        });
+        .then(res => { if (res.erro) { alert("Erro: " + res.erro); return; } alert("Agência criada!"); buscarAgencias(res.nome); });
     }
 
     function criarNovoCliente() {
         const ag = document.getElementById('agencia').value;
         if (!ag) { alert("Selecione uma Agência primeiro!"); return; }
-
         let nomeCliente = prompt(`Digite o nome do NOVO CLIENTE:\n${ag}`);
         if (!nomeCliente) return;
-
         nomeCliente = nomeCliente.trim().toUpperCase();
-        document.getElementById('cliente').value = '';
-        document.getElementById('cliente').placeholder = "Criando pasta...";
-
+        document.getElementById('cliente').value = ''; document.getElementById('cliente').placeholder = "Criando pasta...";
         fetch(`${URL_SCRIPT}?rota=criarCliente&agencia=${encodeURIComponent(ag)}&nome=${encodeURIComponent(nomeCliente)}`)
         .then(res => res.json())
-        .then(res => {
-            if (res.erro) { alert("Erro: " + res.erro); return; }
-            alert("Cliente criado com sucesso!");
-            carregarClientes(res.nome);
-        });
+        .then(res => { if (res.erro) { alert("Erro: " + res.erro); return; } alert("Cliente criado!"); carregarClientes(res.nome); });
     }
 
-    // --- LÓGICA DE ITENS E SUBMISSÃO ---
+    // --- ITENS E SUBMISSÃO ---
     const btnAddItem = document.getElementById('btnAddItem');
     const itemsContainer = document.getElementById('itemsContainer');
     let itemCount = 1;
@@ -421,6 +473,7 @@
             });
         });
 
+        // O campo Meios já puxa do input hidden com as vírgulas e ponto!
         const formData = {
             rota: 'gerarPDF', 
             agencia: document.getElementById('agencia').value.toUpperCase(),
@@ -428,7 +481,7 @@
             campanha: document.getElementById('campanha').value.toUpperCase(),
             praca: document.getElementById('praca').value.toUpperCase(),
             periodo: document.getElementById('periodo').value.toUpperCase(),
-            meios: document.getElementById('meios').value.toUpperCase(),
+            meios: document.getElementById('meios').value, 
             condicao: document.getElementById('condicao').value.toUpperCase(),
             prazoPag: document.getElementById('prazoPag').value.toUpperCase(),
             validade: document.getElementById('validade').value.toUpperCase(),
@@ -439,11 +492,11 @@
         fetch(URL_SCRIPT, { method: 'POST', body: JSON.stringify(formData) })
         .then(res => res.json())
         .then(response => {
-            alert('Orçamento enviado com sucesso! Se digitou palavras novas, elas já foram salvas na planilha.');
+            alert('Enviado com sucesso! Dados prontos para o PDF.');
             btnSubmit.innerText = 'GERAR ORÇAMENTO';
             btnSubmit.disabled = false;
         }).catch(err => {
-            alert("Requisição enviada ao servidor.");
+            alert("Requisição enviada.");
             btnSubmit.innerText = 'GERAR ORÇAMENTO';
             btnSubmit.disabled = false;
         });
