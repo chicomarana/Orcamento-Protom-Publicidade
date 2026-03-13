@@ -181,7 +181,7 @@
             <h2 class="card-title">6. Gerar e Enviar</h2>
             <button type="button" class="btn-action bg-green" id="btnGerarPdf" onclick="gerarDocumentoPDF()">GERAR ORÇAMENTO (PDF)</button>
             <button type="button" class="btn-action bg-blue" id="btnEmail" onclick="enviarViaEmail()">ENVIAR PDF VIA GMAIL (RASCUNHO)</button>
-            <button type="button" class="btn-action bg-wpp" id="btnWpp" onclick="compartilharPDF()">COMPARTILHAR PDF (WHATSAPP)</button>
+            <button type="button" class="btn-action bg-wpp" id="btnWpp" onclick="enviarViaWhatsapp()">COMPARTILHAR PDF (WHATSAPP)</button>
         </div>
 
     </form>
@@ -201,7 +201,6 @@
     const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbzfeflsrPywqxil3eoPHKzjMdSKh_cTKVXQCLEkZLySmGaOrXmVIv9PNIHYxshuv-40/exec'; 
     let linkPdfGerado = "";
     let nomeArquivoGerado = "";
-    let base64PdfGerado = ""; 
 
     function formatarMoeda(input) {
         let v = input.value.replace(/\D/g, '');
@@ -257,7 +256,7 @@
         document.getElementById('meios-display').innerText = 'Selecione...';
         document.getElementById('meios-display').classList.remove('preenchido');
         document.querySelectorAll('#meios-lista input').forEach(cb => cb.checked = false);
-        linkPdfGerado = ""; nomeArquivoGerado = ""; base64PdfGerado = "";
+        linkPdfGerado = ""; nomeArquivoGerado = ""; 
         adicionarLinhaItem(); preencherData();
     }
 
@@ -441,7 +440,7 @@
             condicao: document.getElementById('condicao').value.toUpperCase(), prazoPag: document.getElementById('prazoPag').value.toUpperCase(),
             validade: document.getElementById('validade').value.toUpperCase(), prazoEnt: document.getElementById('prazoEnt').value.toUpperCase(),
             dataAtual: document.getElementById('dataAtual').value, nomeContato: document.getElementById('nomeContato').value,
-            responsavel: document.getElementById('responsavel').value, /* Deixado livre para o Title Case ir pro e-mail */
+            responsavel: document.getElementById('responsavel').value, 
             isAjuste: document.getElementById('isAjuste').checked, numBase: document.getElementById('numOrcamento').value, itens: itens
         };
     }
@@ -456,7 +455,7 @@
             if(res.erro) return alert("Erro: " + res.erro);
             
             document.getElementById('numOrcamento').value = res.orcNum;
-            linkPdfGerado = res.url; nomeArquivoGerado = res.fileName; base64PdfGerado = res.base64; 
+            linkPdfGerado = res.url; nomeArquivoGerado = res.fileName;
             
             if(confirm("PDF Gerado com sucesso!\nNº: " + res.orcNum + "\n\nDeseja abrir o PDF agora?")) window.open(res.url, '_blank');
         }).catch(e=>{ btn.innerText = "GERAR ORÇAMENTO (PDF)"; btn.disabled = false; alert("Falha na conexão."); });
@@ -474,24 +473,16 @@
         });
     }
 
-    async function compartilharPDF() {
-        if(!base64PdfGerado || !nomeArquivoGerado) return alert("Gere o PDF primeiro para anexá-lo.");
-        const btn = document.getElementById('btnWpp'); const textoOriginal = btn.innerText;
-        btn.innerText = "PREPARANDO ARQUIVO..."; btn.disabled = true;
-        try {
-            const byteCharacters = atob(base64PdfGerado);
-            const byteNumbers = new Array(byteCharacters.length);
-            for (let i = 0; i < byteCharacters.length; i++) { byteNumbers[i] = byteCharacters.charCodeAt(i); }
-            const byteArray = new Uint8Array(byteNumbers);
-            const blob = new Blob([byteArray], { type: 'application/pdf' });
-            const file = new File([blob], nomeArquivoGerado + '.pdf', { type: 'application/pdf' });
-
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                await navigator.share({ files: [file], title: nomeArquivoGerado, text: 'Segue o orçamento em anexo.' });
-            } else {
-                alert("Seu navegador não suporta o envio direto. Use o botão de abrir pasta ou rascunho de email.");
-            }
-        } catch (error) { console.error(error); } finally { btn.innerText = textoOriginal; btn.disabled = false; }
+    // --- WHATSAPP RESTAURADO PARA O FORMATO DE LINK (WA.ME) ---
+    function enviarViaWhatsapp() {
+        if(!linkPdfGerado) return alert("Gere o PDF primeiro para obter o link.");
+        
+        let cli = document.getElementById('cliente').value.split(' - ')[1] || "Cliente";
+        let camp = document.getElementById('campanha').value;
+        let msg = `Olá! Segue o link do orçamento da campanha *${camp}* para a *${cli}*.\n\n📄 *Acessar PDF:* ${linkPdfGerado}`;
+        
+        // Abre o zap direcionando para o número com o texto formatado e o link do Drive.
+        window.open(`https://wa.me/5571999660529?text=${encodeURIComponent(msg)}`, '_blank');
     }
 </script>
 </body>
