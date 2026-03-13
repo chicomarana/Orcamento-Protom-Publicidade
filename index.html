@@ -18,6 +18,8 @@
 
         .header { text-align: center; margin-bottom: 20px; }
         .header img { max-height: 60px; margin-bottom: 5px; object-fit: contain; }
+        .header h1 { font-size: 24px; color: var(--yellow-main); margin-bottom: 5px; }
+        .header h1 span { color: var(--orange-main); }
         .header p { font-size: 12px; color: var(--text-gray); font-weight: 600; }
 
         /* TOP ACTION BAR */
@@ -80,7 +82,8 @@
 
 <div class="app-container">
     <div class="header">
-        <img src="logo_protom.png" alt="Protom Logo">
+        <img src="logo_protom.png" alt="Protom Logo" id="logoImg" onerror="this.style.display='none'; document.getElementById('logoFallback').style.display='block';">
+        <h1 id="logoFallback" style="display:none;">📢 <span>PRO</span>TOM</h1>
         <p>Orçamento Publicidade - Mobile</p>
     </div>
 
@@ -195,9 +198,10 @@
     let nomeArquivoGerado = "";
     let base64PdfGerado = ""; 
 
-    // --- FORMATAÇÕES ---
+    // --- FORMATAÇÕES COM PROTEÇÃO MOBILE ---
     document.addEventListener('input', function(e) {
         if (e.target.tagName !== 'INPUT') return;
+        
         if (e.target.classList.contains('item-title-case')) {
             let p = e.target.selectionStart;
             let preposicoes = ['de', 'da', 'do', 'das', 'dos', 'e'];
@@ -210,7 +214,12 @@
             e.target.value = words.join(' ');
             e.target.setSelectionRange(p, p);
         } else if (!e.target.classList.contains('item-desc') && !e.target.classList.contains('item-data') && (e.target.type === 'text' || e.target.hasAttribute('list'))) {
-            let p = e.target.selectionStart; e.target.value = e.target.value.toUpperCase(); e.target.setSelectionRange(p, p);
+            // Evita bugar a seleção de datalist no Android
+            if (e.target.value !== e.target.value.toUpperCase()) {
+                let p = e.target.selectionStart; 
+                e.target.value = e.target.value.toUpperCase(); 
+                try { e.target.setSelectionRange(p, p); } catch(err){}
+            }
         }
     });
 
@@ -257,13 +266,72 @@
 
     function carregarClientes(sel='') {
         const ag = document.getElementById('agencia').value;
-        const cli = document.getElementById('cliente');
-        if(!sel) cli.value = '';
-        if(!ag) { cli.placeholder = 'Selecione Agência'; return; }
-        cli.placeholder = 'Buscando...';
-        fetch(`${URL_SCRIPT}?rota=getClientes&agencia=${encodeURIComponent(ag)}`).then(r=>r.json()).then(d => {
-            preencherDatalist('lista-clientes', d); cli.placeholder = "Selecione...";
-            if(sel) cli.value = sel;
+        const cliInput = document.getElementById('cliente');
+        const cliData = document.getElementById('lista-clientes');
+        
+        if (!sel) cliInput.value = '';
+        if (!ag) { cliInput.placeholder = 'Selecione a agência'; cliData.innerHTML = ''; return; }
+        
+        cliInput.placeholder = 'Buscando clientes...';
+        fetch(`${URL_SCRIPT}?rota=getClientes&agencia=${encodeURIComponent(ag)}`)
+            .then(r => r.json())
+            .then(d => {
+                if(!d || d.length === 0) {
+                    cliInput.placeholder = "Nenhum cliente na pasta.";
+                    cliData.innerHTML = '';
+                } else {
+                    preencherDatalist('lista-clientes', d); 
+                    cliInput.placeholder = "Selecione o cliente...";
+                    if(sel) cliInput.value = sel;
+                }
+            })
+            .catch(err => {
+                cliInput.placeholder = "Erro ao buscar";
+                alert("Erro na conexão. Verifique se o nome da Agência está completo (Com os números).");
+            });
+    }
+
+    // --- CRIAÇÃO COM TRAVA DE SEGURANÇA (AVISA SE O GAS ESTIVER DESATUALIZADO) ---
+    function criarNovaAgencia() {
+        let nomeAgencia = prompt("Digite o nome da NOVA AGÊNCIA:");
+        if (!nomeAgencia) return;
+        nomeAgencia = nomeAgencia.trim().toUpperCase();
+        document.getElementById('agencia').value = ''; document.getElementById('agencia').placeholder = "Criando pasta...";
+        
+        fetch(`${URL_SCRIPT}?rota=criarAgencia&nome=${encodeURIComponent(nomeAgencia)}`)
+        .then(res => res.json())
+        .then(res => { 
+            // Proteção: Se o Google Script estiver na versão velha, ele devolve uma Array vazia [] em vez de {status, nome}
+            if (Array.isArray(res) || !res.nome) {
+                alert("⚠️ ATENÇÃO: O Servidor Google não está na versão mais recente!\n\nVá no Apps Script > Implantar > Gerenciar Implantações > Lápis > Mude para 'Nova Versão' e salve.");
+                document.getElementById('agencia').placeholder = "Falha por versão antiga";
+                return;
+            }
+            if (res.erro) { alert("Erro: " + res.erro); return; } 
+            alert("Agência criada com sucesso!"); 
+            buscarAgencias(res.nome); 
+        });
+    }
+
+    function criarNovoCliente() {
+        const ag = document.getElementById('agencia').value;
+        if (!ag) { alert("Selecione uma Agência primeiro!"); return; }
+        let nomeCliente = prompt(`Digite o nome do NOVO CLIENTE:\n${ag}`);
+        if (!nomeCliente) return;
+        nomeCliente = nomeCliente.trim().toUpperCase();
+        document.getElementById('cliente').value = ''; document.getElementById('cliente').placeholder = "Criando pasta...";
+        
+        fetch(`${URL_SCRIPT}?rota=criarCliente&agencia=${encodeURIComponent(ag)}&nome=${encodeURIComponent(nomeCliente)}`)
+        .then(res => res.json())
+        .then(res => { 
+            if (Array.isArray(res) || !res.nome) {
+                alert("⚠️ ATENÇÃO: O Servidor Google não está na versão mais recente!\n\nVá no Apps Script > Implantar > Gerenciar Implantações > Lápis > Mude para 'Nova Versão' e salve.");
+                document.getElementById('cliente').placeholder = "Falha por versão antiga";
+                return;
+            }
+            if (res.erro) { alert("Erro: " + res.erro); return; } 
+            alert("Cliente criado com sucesso!"); 
+            carregarClientes(res.nome); 
         });
     }
 
@@ -333,11 +401,11 @@
         const div = document.createElement('div'); div.className = 'item-row';
         div.innerHTML = `
             <button type="button" class="btn-remove-item" onclick="this.parentElement.remove(); calcularTotal();">X</button>
-            <div class="input-group"><label>Peça</label><input list="lista-peca" class="item-peca" value="${p}" required></div>
+            <div class="input-group"><label>Peça / Duração</label><input list="lista-peca" class="item-peca" value="${p}" required></div>
             <div class="input-group"><label>Descrição</label><input list="lista-desc" class="item-desc" value="${d}" required></div>
             <div style="display: flex; gap: 10px;">
-                <div class="input-group" style="flex:2;"><label>Valor (R$)</label><input type="number" step="0.01" class="item-valor" value="${v}" oninput="calcularTotal()" required></div>
-                <div class="input-group" style="flex:1;"><label>Qtde</label><input type="number" class="item-qtde" value="${q}" oninput="calcularTotal()" required></div>
+                <div class="input-group" style="flex:2;"><label>Valor Unit. (R$)</label><input type="number" step="0.01" class="item-valor" value="${v}" oninput="calcularTotal()" required></div>
+                <div class="input-group" style="flex:1;"><label>Qtde.</label><input type="number" class="item-qtde" value="${q}" oninput="calcularTotal()" required></div>
             </div>`;
         document.getElementById('itemsContainer').appendChild(div);
         itemCount++; calcularTotal();
@@ -439,7 +507,7 @@
                     text: 'Segue o orçamento em anexo.'
                 });
             } else {
-                alert("Seu navegador não suporta envio direto. Use o Link do Drive.");
+                alert("Seu navegador não suporta o envio direto. Use o link ou acesse a pasta pelo botão 'Ver Pasta'.");
             }
         } catch (error) {
             console.error(error);
