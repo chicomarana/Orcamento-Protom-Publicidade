@@ -162,7 +162,7 @@
             <h2 class="card-title">6. Gerar e Enviar</h2>
             <button type="button" class="btn-primary" id="btnGerarPdf" onclick="gerarDocumentoPDF()">1. GERAR PDF NO DRIVE</button>
             <button type="button" class="btn-secondary" id="btnEmail" onclick="enviarViaEmail()">2. ENVIAR RASCUNHO GMAIL</button>
-            <button type="button" class="btn-wpp" id="btnWpp" onclick="enviarViaWhatsapp()">3. ENVIAR LINK WHATSAPP</button>
+            <button type="button" class="btn-wpp" id="btnWpp" onclick="compartilharPDF()">3. COMPARTILHAR PDF (WHATSAPP)</button>
         </div>
 
     </form>
@@ -180,6 +180,7 @@
     const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbzfeflsrPywqxil3eoPHKzjMdSKh_cTKVXQCLEkZLySmGaOrXmVIv9PNIHYxshuv-40/exec'; 
     let linkPdfGerado = "";
     let nomeArquivoGerado = "";
+    let base64PdfGerado = ""; // GUARDA O ARQUIVO FÍSICO NA MEMÓRIA
 
     // --- FORMATAÇÕES ---
     document.addEventListener('input', function(e) {
@@ -209,8 +210,8 @@
         document.getElementById('meios-display').innerText = 'Selecione...';
         document.getElementById('meios-display').classList.remove('preenchido');
         document.querySelectorAll('#meios-lista input').forEach(cb => cb.checked = false);
-        linkPdfGerado = ""; nomeArquivoGerado = "";
-        adicionarLinhaItem(); // Põe 1 item vazio
+        linkPdfGerado = ""; nomeArquivoGerado = ""; base64PdfGerado = "";
+        adicionarLinhaItem();
         preencherData();
     }
 
@@ -272,7 +273,7 @@
             res.arquivos.forEach(f => {
                 let icon = f.tipo.includes('pdf') ? '📄 PDF ' : '📊 XLS ';
                 if(acao === 'abrir') {
-                    if(!f.tipo.includes('pdf')) { // Só planilhas para carregar
+                    if(!f.tipo.includes('pdf')) {
                         html += `<div class="file-item" onclick="carregarOrcamentoDrive('${f.id}')">${icon} ${f.nome}</div>`;
                     }
                 } else {
@@ -289,7 +290,6 @@
         document.getElementById('modalList').innerHTML = 'Lendo planilha... Aguarde (pode demorar).';
         fetch(`${URL_SCRIPT}?rota=carregarOrcamento&id=${id}`).then(r=>r.json()).then(res => {
             if(res.erro) return alert("Erro ao carregar: " + res.erro);
-            
             let d = res.dados;
             document.getElementById('numOrcamento').value = d.numOrcamento;
             document.getElementById('campanha').value = d.campanha;
@@ -301,17 +301,14 @@
             document.getElementById('prazoEnt').value = d.prazoEnt;
             if(d.data) document.getElementById('dataAtual').value = d.data;
 
-            // Meios
             document.getElementById('meios').value = d.meios;
             document.getElementById('meios-display').innerText = d.meios || 'Selecione...';
             if(d.meios) document.getElementById('meios-display').classList.add('preenchido');
             
-            // Itens
             document.getElementById('itemsContainer').innerHTML = '';
             itemCount = 0;
             d.itens.forEach(it => { adicionarLinhaItem(it.peca, it.desc, it.valor, it.qtde); });
-            calcularTotal();
-            fecharModal();
+            calcularTotal(); fecharModal();
             alert("Dados carregados com sucesso! Verifique a caixa 'Orçamento de Ajuste' se for gerar uma nova versão.");
         });
     }
@@ -387,14 +384,15 @@
             if(res.erro) return alert("Erro: " + res.erro);
             
             document.getElementById('numOrcamento').value = res.orcNum;
-            linkPdfGerado = res.url; nomeArquivoGerado = res.fileName;
+            linkPdfGerado = res.url; nomeArquivoGerado = res.fileName; 
+            base64PdfGerado = res.base64; // GUARDA O ARQUIVO FÍSICO NA MEMÓRIA PARA O WHATSAPP
             
             if(confirm("PDF Gerado com sucesso!\nNº: " + res.orcNum + "\n\nDeseja abrir o PDF agora?")) window.open(res.url, '_blank');
         }).catch(e=>{ btn.innerText = "1. GERAR PDF NO DRIVE"; btn.disabled = false; alert("Falha na conexão."); });
     }
 
     function enviarViaEmail() {
-        if(!nomeArquivoGerado) return alert("Gere o PDF primeiro (Botão 1) antes de enviar por e-mail.");
+        if(!nomeArquivoGerado) return alert("Gere o PDF primeiro (Botão 1).");
         const btn = document.getElementById('btnEmail'); btn.innerText = "CRIANDO RASCUNHO..."; btn.disabled = true;
         let fd = coletarDadosForm(); fd.rota = 'enviarEmail'; fd.fileName = nomeArquivoGerado;
         
@@ -405,12 +403,39 @@
         });
     }
 
-    function enviarViaWhatsapp() {
-        if(!linkPdfGerado) return alert("Gere o PDF primeiro (Botão 1) para obter o link do arquivo.");
-        let cli = document.getElementById('cliente').value.split(' - ')[1] || "Cliente";
-        let camp = document.getElementById('campanha').value;
-        let txt = `Olá! Segue o link do orçamento da campanha *${camp}* para a *${cli}*.\n\n📄 *Acessar PDF:* ${linkPdfGerado}`;
-        window.open(`https://wa.me/5571999660529?text=${encodeURIComponent(txt)}`, '_blank');
+    async function compartilharPDF() {
+        if(!base64PdfGerado || !nomeArquivoGerado) return alert("Gere o PDF primeiro (Botão 1) para anexá-lo.");
+        
+        const btn = document.getElementById('btnWpp');
+        const textoOriginal = btn.innerText;
+        btn.innerText = "PREPARANDO ARQUIVO...";
+        btn.disabled = true;
+
+        try {
+            // Decodifica a Base64 e recria o arquivo fisicamente na memória do celular
+            const byteCharacters = atob(base64PdfGerado);
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) { byteNumbers[i] = byteCharacters.charCodeAt(i); }
+            const byteArray = new Uint8Array(byteNumbers);
+            const blob = new Blob([byteArray], { type: 'application/pdf' });
+            const file = new File([blob], nomeArquivoGerado + '.pdf', { type: 'application/pdf' });
+
+            // Abre a gaveta nativa de compartilhamento do Android/iOS (com o PDF anexado)
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({
+                    files: [file],
+                    title: nomeArquivoGerado,
+                    text: 'Segue o orçamento em anexo.'
+                });
+            } else {
+                alert("Seu navegador não suporta envio direto. Use o Link do Drive.");
+            }
+        } catch (error) {
+            console.error(error);
+        } finally {
+            btn.innerText = textoOriginal;
+            btn.disabled = false;
+        }
     }
 </script>
 </body>
