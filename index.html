@@ -94,22 +94,12 @@
         .input-group input:focus, .input-group select:focus { box-shadow: 0 0 0 2px rgba(255, 203, 5, 0.3); }
 
         .btn-small {
-            background-color: var(--green-btn);
-            color: #ffffff;
-            border: none;
-            border-radius: 8px;
-            width: 100px; 
-            font-size: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            white-space: nowrap;
-            text-align: center;
-            transition: background-color 0.2s;
+            background-color: var(--green-btn); color: #ffffff; border: none; border-radius: 8px;
+            width: 100px; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap;
+            text-align: center; transition: background-color 0.2s;
         }
-
         .btn-small:active { background-color: var(--green-btn-hover); transform: translateY(2px); }
 
-        /* MULTI-SELECT CUSTOMIZADO PARA MEIOS */
         .fake-input {
             width: 100%; padding: 12px; border: 1px solid var(--orange-main); border-radius: 8px;
             font-size: 14px; background-color: #fff; min-height: 46px; cursor: pointer; color: var(--text-gray);
@@ -131,6 +121,16 @@
             background: transparent; color: var(--orange-main); border: 2px dashed var(--orange-main);
             padding: 10px; width: 100%; border-radius: 8px; font-weight: 600; cursor: pointer; margin-bottom: 15px;
         }
+        
+        .total-box {
+            text-align: right;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--orange-main);
+            padding-right: 5px;
+            margin-bottom: 10px;
+        }
+
         .btn-primary {
             background-color: var(--yellow-main); color: #fff; border: none; padding: 15px; width: 100%;
             border-radius: 30px; font-size: 16px; font-weight: 700; cursor: pointer; text-transform: uppercase;
@@ -190,19 +190,15 @@
                 <input list="lista-periodo" id="periodo" placeholder="Carregando..." required>
                 <datalist id="lista-periodo"></datalist>
             </div>
-            
             <div class="input-group">
                 <label>Meios</label>
                 <div id="meios-display" class="fake-input" onclick="toggleMeios()">Selecione os meios...</div>
-                
                 <div id="meios-dropdown" class="dropdown-meios">
                     <div id="meios-lista"></div>
-                    
                     <div class="input-row" style="margin-top: 15px;">
                         <input type="text" id="novo-meio" placeholder="Digitar outro meio...">
                         <button type="button" class="btn-small" style="background-color: var(--orange-main);" onclick="adicionarMeio()">+ Add</button>
                     </div>
-                    
                     <button type="button" class="btn-primary" style="padding: 10px; font-size: 14px; margin-top: 20px;" onclick="toggleMeios()">CONFIRMAR SELEÇÃO</button>
                 </div>
                 <input type="hidden" id="meios" required>
@@ -212,17 +208,30 @@
         <div class="card card-yellow">
             <h2 class="card-title">3. Itens do Orçamento</h2>
             
+            <datalist id="lista-peca"></datalist>
+            <datalist id="lista-desc"></datalist>
+
             <div id="itemsContainer">
                 <div class="item-row">
-                    <div class="input-group"><label>Peça / Duração</label><input type="text" class="item-peca" placeholder="Ex: Spot 30s" required></div>
-                    <div class="input-group"><label>Descrição</label><input type="text" class="item-desc" placeholder="Ex: Locução Standard..." required></div>
+                    <div class="input-group">
+                        <label>Peça / Duração</label>
+                        <input list="lista-peca" class="item-peca" placeholder="Selecione ou digite..." required>
+                    </div>
+                    <div class="input-group">
+                        <label>Descrição</label>
+                        <input list="lista-desc" class="item-desc" placeholder="Selecione, cole ou edite..." required>
+                    </div>
                     <div style="display: flex; gap: 10px;">
-                        <div class="input-group" style="flex: 2;"><label>Valor Unit. (R$)</label><input type="number" step="0.01" class="item-valor" placeholder="1250.00" required></div>
-                        <div class="input-group" style="flex: 1;"><label>Qtde.</label><input type="number" class="item-qtde" value="1" required></div>
+                        <div class="input-group" style="flex: 2;"><label>Valor Unit. (R$)</label><input type="number" step="0.01" class="item-valor" placeholder="1250.00" oninput="calcularTotal()" required></div>
+                        <div class="input-group" style="flex: 1;"><label>Qtde.</label><input type="number" class="item-qtde" value="1" oninput="calcularTotal()" required></div>
                     </div>
                 </div>
             </div>
             <button type="button" class="btn-add" id="btnAddItem">+ ADICIONAR ITEM (Max 9)</button>
+            
+            <div class="total-box">
+                TOTAL: R$ <span id="valorTotal">0,00</span>
+            </div>
         </div>
 
         <div class="card card-orange">
@@ -273,18 +282,11 @@
         input.addEventListener('blur', function() {
             const val = this.value.trim().toUpperCase();
             if (!val) return;
-
             const datalist = document.getElementById(`lista-${idElemento}`);
             let existe = false;
-            for (let option of datalist.options) {
-                if (option.value.toUpperCase() === val) { existe = true; break; }
-            }
-
-            // Se for uma palavra nova, adiciona na lista local e envia pro Google Script!
+            for (let option of datalist.options) { if (option.value.toUpperCase() === val) { existe = true; break; } }
             if (!existe) {
-                const opt = document.createElement('option');
-                opt.value = val;
-                datalist.appendChild(opt);
+                const opt = document.createElement('option'); opt.value = val; datalist.appendChild(opt);
                 fetch(`${URL_SCRIPT}?rota=salvarOpcaoNova&celula=${celulaPlanilha}&valor=${encodeURIComponent(val)}`);
             }
         });
@@ -298,68 +300,56 @@
 
     // --- LOGICA DE MEIOS (MULTIPLE) ---
     let meiosCadastrados = [];
-
     function toggleMeios() {
         const dd = document.getElementById('meios-dropdown');
         dd.style.display = (dd.style.display === 'none' || dd.style.display === '') ? 'block' : 'none';
     }
-
     function renderizarMeios() {
         let html = '';
         meiosCadastrados.forEach(meio => {
-            html += `<label class="meio-checkbox-item">
-                        <input type="checkbox" value="${meio}" onchange="atualizarCampoMeios()"> ${meio}
-                     </label>`;
+            html += `<label class="meio-checkbox-item"><input type="checkbox" value="${meio}" onchange="atualizarCampoMeios()"> ${meio}</label>`;
         });
         document.getElementById('meios-lista').innerHTML = html;
-        atualizarCampoMeios(); // Atualiza a exibição se já houver algo marcado
+        atualizarCampoMeios();
     }
-
     function atualizarCampoMeios() {
         const checkboxes = document.querySelectorAll('#meios-lista input[type="checkbox"]:checked');
         const display = document.getElementById('meios-display');
         const inputOculto = document.getElementById('meios');
-        
         let marcados = Array.from(checkboxes).map(cb => cb.value);
-        
         if (marcados.length === 0) {
-            display.innerText = 'Selecione os meios...';
-            display.classList.remove('preenchido');
-            inputOculto.value = '';
+            display.innerText = 'Selecione os meios...'; display.classList.remove('preenchido'); inputOculto.value = '';
         } else {
-            // Junta com vírgula e bota o ponto final
             let textoFormatado = marcados.join(', ') + '.';
-            display.innerText = textoFormatado;
-            display.classList.add('preenchido');
-            inputOculto.value = textoFormatado;
+            display.innerText = textoFormatado; display.classList.add('preenchido'); inputOculto.value = textoFormatado;
         }
     }
-
     function adicionarMeio() {
         const inputNovo = document.getElementById('novo-meio');
         const val = inputNovo.value.trim().toUpperCase();
         if(!val) return;
-
         if(!meiosCadastrados.includes(val)) {
-            meiosCadastrados.push(val);
-            renderizarMeios();
-            
-            // Marca a caixinha recém criada
+            meiosCadastrados.push(val); renderizarMeios();
             const caixas = document.querySelectorAll('#meios-lista input[type="checkbox"]');
-            caixas[caixas.length - 1].checked = true;
-            atualizarCampoMeios();
-
-            // Salva na planilha via Auto-Save
+            caixas[caixas.length - 1].checked = true; atualizarCampoMeios();
             fetch(`${URL_SCRIPT}?rota=salvarOpcaoNova&celula=B19&valor=${encodeURIComponent(val)}`);
         }
         inputNovo.value = '';
     }
 
+    // --- LÓGICA DE CALCULAR TOTAL ---
+    function calcularTotal() {
+        let total = 0;
+        document.querySelectorAll('.item-row').forEach(row => {
+            let valor = parseFloat(row.querySelector('.item-valor').value) || 0;
+            let qtde = parseInt(row.querySelector('.item-qtde').value) || 0;
+            total += (valor * qtde);
+        });
+        document.getElementById('valorTotal').innerText = total.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    }
+
     // --- CARREGAMENTO INICIAL ---
-    window.onload = () => {
-        buscarAgencias();
-        buscarMenus();
-    };
+    window.onload = () => { buscarAgencias(); buscarMenus(); };
 
     function buscarMenus() {
         fetch(`${URL_SCRIPT}?rota=getDropdowns`)
@@ -371,9 +361,11 @@
                 preencherDatalist('lista-prazoPag', dados.prazoPag); document.getElementById('prazoPag').placeholder = "Ex: 30 DIAS";
                 preencherDatalist('lista-validade', dados.validade); document.getElementById('validade').placeholder = "Ex: 10 DIAS";
                 
-                // Trata a caixa especial de Meios
-                meiosCadastrados = dados.meios || [];
-                renderizarMeios();
+                // Trata as novas listas de Peça e Descrição
+                preencherDatalist('lista-peca', dados.peca);
+                preencherDatalist('lista-desc', dados.descricoes);
+
+                meiosCadastrados = dados.meios || []; renderizarMeios();
             });
     }
 
@@ -400,10 +392,8 @@
         const ag = document.getElementById('agencia').value;
         const cliInput = document.getElementById('cliente');
         const cliData = document.getElementById('lista-clientes');
-        
         if (!selecionarNome) cliInput.value = '';
         if (!ag) { cliInput.placeholder = 'Selecione uma agência primeiro'; cliData.innerHTML = ''; return; }
-
         cliInput.placeholder = 'Buscando clientes...';
         fetch(`${URL_SCRIPT}?rota=getClientes&agencia=${encodeURIComponent(ag)}`)
             .then(res => res.json())
@@ -414,7 +404,6 @@
             });
     }
 
-    // --- CRIAÇÃO DE AGÊNCIA E CLIENTE ---
     function criarNovaAgencia() {
         let nomeAgencia = prompt("Digite o nome da NOVA AGÊNCIA:");
         if (!nomeAgencia) return;
@@ -437,7 +426,7 @@
         .then(res => { if (res.erro) { alert("Erro: " + res.erro); return; } alert("Cliente criado!"); carregarClientes(res.nome); });
     }
 
-    // --- ITENS E SUBMISSÃO ---
+    // --- ADICIONAR ITENS ---
     const btnAddItem = document.getElementById('btnAddItem');
     const itemsContainer = document.getElementById('itemsContainer');
     let itemCount = 1;
@@ -447,11 +436,17 @@
         const newItem = document.createElement('div');
         newItem.className = 'item-row';
         newItem.innerHTML = `
-            <div class="input-group"><label>Peça / Duração</label><input type="text" class="item-peca" required></div>
-            <div class="input-group"><label>Descrição</label><input type="text" class="item-desc" required></div>
+            <div class="input-group">
+                <label>Peça / Duração</label>
+                <input list="lista-peca" class="item-peca" placeholder="Selecione ou digite..." required>
+            </div>
+            <div class="input-group">
+                <label>Descrição</label>
+                <input list="lista-desc" class="item-desc" placeholder="Selecione, cole ou edite..." required>
+            </div>
             <div style="display: flex; gap: 10px;">
-                <div class="input-group" style="flex: 2;"><label>Valor Unit. (R$)</label><input type="number" step="0.01" class="item-valor" required></div>
-                <div class="input-group" style="flex: 1;"><label>Qtde.</label><input type="number" class="item-qtde" value="1" required></div>
+                <div class="input-group" style="flex: 2;"><label>Valor Unit. (R$)</label><input type="number" step="0.01" class="item-valor" placeholder="1250.00" oninput="calcularTotal()" required></div>
+                <div class="input-group" style="flex: 1;"><label>Qtde.</label><input type="number" class="item-qtde" value="1" oninput="calcularTotal()" required></div>
             </div>`;
         itemsContainer.appendChild(newItem);
         itemCount++;
@@ -473,7 +468,6 @@
             });
         });
 
-        // O campo Meios já puxa do input hidden com as vírgulas e ponto!
         const formData = {
             rota: 'gerarPDF', 
             agencia: document.getElementById('agencia').value.toUpperCase(),
