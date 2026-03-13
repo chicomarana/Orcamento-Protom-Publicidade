@@ -199,11 +199,8 @@
     <div class="modal-box" style="max-width: 320px; text-align: center; padding-top: 30px; padding-bottom: 20px;">
         <h3 style="margin-bottom: 15px; color: var(--green-btn); font-size: 18px;">Escolha o WhatsApp</h3>
         <p style="font-size: 13px; color: var(--text-gray); margin-bottom: 20px; padding: 0 10px;">Qual versão do aplicativo você deseja usar para enviar o PDF?</p>
-        
         <button class="btn-action bg-green" onclick="acionarWhatsappEspecifico('com.whatsapp')" style="min-height: 45px; font-size: 13px; margin-bottom: 10px;">WhatsApp Pessoal</button>
-        
         <button class="btn-action" style="background-color: #103629; min-height: 45px; font-size: 13px; margin-bottom: 15px;" onclick="acionarWhatsappEspecifico('com.whatsapp.w4b')">WhatsApp Business</button>
-        
         <button class="btn-action" style="background-color: var(--text-gray); min-height: 45px; font-size: 13px; margin-bottom: 0;" onclick="fecharModalWpp()">CANCELAR</button>
     </div>
 </div>
@@ -239,7 +236,6 @@
 
     document.addEventListener('input', function(e) {
         if (e.target.tagName !== 'INPUT') return;
-        
         if (e.target.classList.contains('item-title-case')) {
             let p = e.target.selectionStart;
             let preposicoes = ['de', 'da', 'do', 'das', 'dos', 'e'];
@@ -258,6 +254,32 @@
             }
         }
     });
+
+    // --- NOVA FUNÇÃO DE VALIDAÇÃO DE AGÊNCIA/CLIENTE ---
+    function validarAgenciaCliente() {
+        const agValue = document.getElementById('agencia').value.toUpperCase();
+        const cliValue = document.getElementById('cliente').value.toUpperCase();
+
+        if (!agValue || !cliValue) {
+            alert("⚠️ PREENCHIMENTO OBRIGATÓRIO\nPor favor, selecione a Agência e o Cliente primeiro.");
+            return false;
+        }
+
+        const agOptions = Array.from(document.getElementById('lista-agencias').options).map(opt => opt.value.toUpperCase());
+        const cliOptions = Array.from(document.getElementById('lista-clientes').options).map(opt => opt.value.toUpperCase());
+
+        if (!agOptions.includes(agValue)) {
+            alert('⚠️ AGÊNCIA NÃO CADASTRADA!\n\nVocê digitou um nome de agência que não existe na pasta do Drive.\n\n👉 Selecione uma opção válida na lista ou clique no botão "+ Agência" para criar uma nova.');
+            return false;
+        }
+        
+        if (!cliOptions.includes(cliValue)) {
+            alert('⚠️ CLIENTE NÃO CADASTRADO!\n\nVocê digitou um nome de cliente que não existe nesta agência no Drive.\n\n👉 Selecione uma opção válida na lista ou clique no botão "+ Cliente" para criá-lo.');
+            return false;
+        }
+
+        return true;
+    }
 
     function limparCampos() {
         if(!confirm("Limpar todos os campos?")) return;
@@ -337,8 +359,11 @@
     }
 
     function abrirModalArquivos(acao) {
-        const ag = document.getElementById('agencia').value; const cli = document.getElementById('cliente').value;
-        if(!ag || !cli) return alert("Selecione Agência e Cliente primeiro.");
+        // Valida se agência e cliente são reais antes de buscar no Drive
+        if(!validarAgenciaCliente()) return;
+        
+        const ag = document.getElementById('agencia').value; 
+        const cli = document.getElementById('cliente').value;
         
         document.getElementById('modalArquivos').style.display = 'flex';
         document.getElementById('modalList').innerHTML = 'Buscando arquivos no Drive...';
@@ -367,9 +392,15 @@
     function carregarOrcamentoDrive(id) {
         document.getElementById('modalList').innerHTML = 'Lendo planilha... Aguarde (pode demorar).';
         fetch(`${URL_SCRIPT}?rota=carregarOrcamento&id=${id}`)
-        .then(r => { if (!r.ok) throw new Error("Erro na rede."); return r.json(); })
+        .then(r => {
+            if (!r.ok) throw new Error("Erro na rede.");
+            return r.json();
+        })
         .then(res => {
-            if(res.erro) { document.getElementById('modalList').innerHTML = `<p style="color:red">Erro: ${res.erro}</p>`; return; }
+            if(res.erro) {
+                document.getElementById('modalList').innerHTML = `<p style="color:red">Erro no servidor. Verifique se o serviço 'Drive API' está ativado.<br><br>Detalhes:<br>${res.erro}</p>`;
+                return;
+            }
             
             let d = res.dados;
             document.getElementById('numOrcamento').value = d.numOrcamento;
@@ -392,7 +423,10 @@
             calcularTotal(); fecharModal();
             alert("Dados carregados com sucesso! Verifique a caixa 'Orçamento de Ajuste' se for gerar uma nova versão.");
         })
-        .catch(err => { document.getElementById('modalList').innerHTML = `<p style="color:red">Falha crítica ao ler o arquivo.</p>`; });
+        .catch(err => {
+            document.getElementById('modalList').innerHTML = `<p style="color:red">Falha crítica ao tentar ler o arquivo. Isso geralmente ocorre quando a "Drive API" não está ativa no Google Apps Script.</p>`;
+            alert("Erro ao ler o arquivo. Consulte os detalhes na tela.");
+        });
     }
 
     let itemCount = 0;
@@ -462,6 +496,10 @@
 
     function gerarDocumentoPDF() {
         if(!document.getElementById('orcamentoForm').checkValidity()) return alert("Preencha os campos obrigatórios primeiro.");
+        
+        // Bloqueia o envio se Agência/Cliente não forem reais
+        if(!validarAgenciaCliente()) return;
+
         const btn = document.getElementById('btnGerarPdf'); btn.innerText = "GERANDO... AGUARDE"; btn.disabled = true;
         let fd = coletarDadosForm(); fd.rota = 'gerarPDF';
         
@@ -488,7 +526,6 @@
         });
     }
 
-    // --- NOVA LÓGICA DE ESCOLHA DE WHATSAPP ---
     function abrirModalOpcoesWpp() {
         if(!linkPdfGerado) return alert("Gere o PDF primeiro para obter o link.");
         document.getElementById('modalWpp').style.display = 'flex';
@@ -508,12 +545,10 @@
         let linkPadraoWaMe = `https://wa.me/5571999660529?text=${encodeURIComponent(msg)}`;
         
         if (isAndroid) {
-            // Se for Android, usamos a mágica do Intent para forçar o app escolhido
             let fallbackSeguro = encodeURIComponent(linkPadraoWaMe);
             let intentUrl = `intent://send?phone=5571999660529&text=${encodeURIComponent(msg)}#Intent;scheme=whatsapp;package=${pacoteAndroid};S.browser_fallback_url=${fallbackSeguro};end;`;
             window.location.href = intentUrl;
         } else {
-            // Se for iPhone ou PC, o sistema lida com o link padrão wa.me
             window.open(linkPadraoWaMe, '_blank');
         }
     }
