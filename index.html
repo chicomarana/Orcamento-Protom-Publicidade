@@ -17,7 +17,14 @@
         .app-container { width: 100%; max-width: 480px; background-color: #ffffff; min-height: 100vh; padding: 20px 15px; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
 
         .header { text-align: center; margin-bottom: 20px; }
-        .header img { max-height: 60px; margin-bottom: 5px; object-fit: contain; }
+        
+        /* --- DIMENSÃO DO LOGO AUMENTADA AQUI (Turno 7) --- */
+        .header img { 
+            max-height: 90px; /* Aumentado de 60px para 90px */
+            margin-bottom: 8px; /* Pequeno ajuste de respiro */
+            object-fit: contain; 
+        }
+        
         .header h1 { font-size: 24px; color: var(--yellow-main); margin-bottom: 5px; }
         .header h1 span { color: var(--orange-main); }
         .header p { font-size: 12px; color: var(--text-gray); font-weight: 600; }
@@ -51,9 +58,25 @@
         .meios-header { padding: 15px; background: #FFF5EC; border-bottom: 1px solid var(--border-color); }
         .meios-body { padding: 15px; max-height: 200px; overflow-y: auto; }
         
-        .meio-checkbox-item { display: flex; align-items: flex-start; margin-bottom: 10px; font-size: 14px; color: var(--text-dark); cursor: pointer;}
-        .meio-checkbox-item input { margin-right: 10px; margin-top: 2px; width: 18px; height: 18px; accent-color: var(--orange-main); flex-shrink: 0;}
-        .meio-checkbox-item span { line-height: 1.4; }
+        /* Menu Meios Alinhado e Centralizado (Correção Turno 6) */
+        .meio-checkbox-item { 
+            display: flex; 
+            align-items: center; /* Alinha o checkbox perfeitamente com o texto */
+            margin-bottom: 12px; 
+            font-size: 14px; 
+            font-weight: 600;
+            color: var(--text-dark); 
+            cursor: pointer;
+        }
+        .meio-checkbox-item input { 
+            margin-right: 12px; 
+            margin-top: 0;
+            width: 22px; 
+            height: 22px; 
+            accent-color: var(--orange-main); 
+            flex-shrink: 0;
+        }
+        .meio-checkbox-item span { line-height: 1; }
 
         .item-row { background: #fff; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; margin-bottom: 10px; position: relative;}
         .btn-remove-item { position: absolute; top: 5px; right: 5px; background: var(--red-btn); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 10px; cursor: pointer;}
@@ -142,8 +165,11 @@
             <h2 class="card-title">3. Itens do Orçamento</h2>
             <datalist id="lista-peca"></datalist>
             <datalist id="lista-desc"></datalist>
+            
             <div id="itemsContainer"></div>
-            <button type="button" class="btn-add" id="btnAddItem">+ ADICIONAR ITEM</button>
+            
+            <button type="button" class="btn-add" id="btnAddItem" onclick="adicionarLinhaItem()">+ ADICIONAR ITEM</button>
+            
             <div class="total-box">TOTAL: R$ <span id="valorTotal">0,00</span></div>
         </div>
 
@@ -348,7 +374,6 @@
 
     function fecharModal() { document.getElementById('modalArquivos').style.display = 'none'; }
 
-    // BLINDAGEM DO FETCH CONTRA FALHA DE API DO GOOGLE
     function carregarOrcamentoDrive(id) {
         document.getElementById('modalList').innerHTML = 'Lendo planilha... Aguarde (pode demorar).';
         fetch(`${URL_SCRIPT}?rota=carregarOrcamento&id=${id}`)
@@ -358,7 +383,7 @@
         })
         .then(res => {
             if(res.erro) {
-                document.getElementById('modalList').innerHTML = `<p style="color:red">Ocorreu um erro no servidor. Verifique se o serviço 'Drive API' está ativado no Apps Script.<br><br>Detalhes:<br>${res.erro}</p>`;
+                document.getElementById('modalList').innerHTML = `<p style="color:red">Erro no servidor. Verifique se o serviço 'Drive API' está ativado.<br><br>Detalhes:<br>${res.erro}</p>`;
                 return;
             }
             
