@@ -47,11 +47,7 @@
         .fake-input { width: 100%; padding: 12px; border: 1px solid var(--orange-main); border-radius: 8px; font-size: 14px; background-color: #fff; min-height: 46px; cursor: pointer; color: var(--text-gray); display: flex; align-items: center; }
         .fake-input.preenchido { color: var(--text-dark); }
         
-        /* MENU MEIOS ESTRUTURADO */
-        .dropdown-meios { 
-            border: 1px solid var(--orange-main); border-top: none; border-radius: 0 0 8px 8px; 
-            background: #FFF5EC; margin-top: -5px; display: none; flex-direction: column; overflow: hidden;
-        }
+        .dropdown-meios { border: 1px solid var(--orange-main); border-top: none; border-radius: 0 0 8px 8px; background: #FFF5EC; margin-top: -5px; display: none; flex-direction: column; overflow: hidden; }
         .meios-header { padding: 15px; background: #FFF5EC; border-bottom: 1px solid var(--border-color); }
         .meios-body { padding: 15px; max-height: 200px; overflow-y: auto; }
         
@@ -71,7 +67,6 @@
         .bg-blue { background-color: var(--blue-btn); }
         .bg-wpp { background-color: #25D366; }
 
-        /* MODAL ESTRUTURADO COM CABEÇALHO FIXO */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000; }
         .modal-box { background: #fff; width: 90%; max-width: 400px; border-radius: 12px; max-height: 80vh; display: flex; flex-direction: column; overflow: hidden; }
         .modal-header-fixed { background: var(--yellow-light); padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--yellow-main); }
@@ -353,10 +348,20 @@
 
     function fecharModal() { document.getElementById('modalArquivos').style.display = 'none'; }
 
+    // BLINDAGEM DO FETCH CONTRA FALHA DE API DO GOOGLE
     function carregarOrcamentoDrive(id) {
         document.getElementById('modalList').innerHTML = 'Lendo planilha... Aguarde (pode demorar).';
-        fetch(`${URL_SCRIPT}?rota=carregarOrcamento&id=${id}`).then(r=>r.json()).then(res => {
-            if(res.erro) return alert("Erro ao carregar: " + res.erro);
+        fetch(`${URL_SCRIPT}?rota=carregarOrcamento&id=${id}`)
+        .then(r => {
+            if (!r.ok) throw new Error("Erro na rede.");
+            return r.json();
+        })
+        .then(res => {
+            if(res.erro) {
+                document.getElementById('modalList').innerHTML = `<p style="color:red">Ocorreu um erro no servidor. Verifique se o serviço 'Drive API' está ativado no Apps Script.<br><br>Detalhes:<br>${res.erro}</p>`;
+                return;
+            }
+            
             let d = res.dados;
             document.getElementById('numOrcamento').value = d.numOrcamento;
             document.getElementById('campanha').value = d.campanha;
@@ -377,6 +382,10 @@
             d.itens.forEach(it => { adicionarLinhaItem(it.peca, it.desc, floatParaMoeda(it.valor), it.qtde); });
             calcularTotal(); fecharModal();
             alert("Dados carregados com sucesso! Verifique a caixa 'Orçamento de Ajuste' se for gerar uma nova versão.");
+        })
+        .catch(err => {
+            document.getElementById('modalList').innerHTML = `<p style="color:red">Falha crítica ao tentar ler o arquivo. Isso geralmente ocorre quando a "Drive API" não está ativa no Google Apps Script.</p>`;
+            alert("Erro ao ler o arquivo. Consulte os detalhes na tela.");
         });
     }
 
@@ -473,15 +482,11 @@
         });
     }
 
-    // --- WHATSAPP RESTAURADO PARA O FORMATO DE LINK (WA.ME) ---
     function enviarViaWhatsapp() {
         if(!linkPdfGerado) return alert("Gere o PDF primeiro para obter o link.");
-        
         let cli = document.getElementById('cliente').value.split(' - ')[1] || "Cliente";
         let camp = document.getElementById('campanha').value;
         let msg = `Olá! Segue o link do orçamento da campanha *${camp}* para a *${cli}*.\n\n📄 *Acessar PDF:* ${linkPdfGerado}`;
-        
-        // Abre o zap direcionando para o número com o texto formatado e o link do Drive.
         window.open(`https://wa.me/5571999660529?text=${encodeURIComponent(msg)}`, '_blank');
     }
 </script>
