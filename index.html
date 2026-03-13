@@ -34,7 +34,7 @@
         .header h1 span { color: var(--orange-main); }
         .header p { font-size: 12px; color: var(--text-gray); }
 
-        /* Card Styles inspired by mockups */
+        /* Card Styles */
         .card {
             border-radius: 12px;
             padding: 20px 15px;
@@ -227,7 +227,6 @@
     // ----------------------------------------------------------------------
     // 1. CONFIGURAÇÃO DA API DO GOOGLE DRIVE
     // ----------------------------------------------------------------------
-    // ATENÇÃO: Cole aqui a URL gerada no Google Apps Script (Implantar > App da Web)
     const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbzfeflsrPywqxil3eoPHKzjMdSKh_cTKVXQCLEkZLySmGaOrXmVIv9PNIHYxshuv-40/exec'; 
 
     // ----------------------------------------------------------------------
@@ -236,11 +235,6 @@
     
     // Assim que a tela carregar, busca as Agências
     window.onload = () => {
-        if(URL_SCRIPT === 'https://script.google.com/macros/s/AKfycbzfeflsrPywqxil3eoPHKzjMdSKh_cTKVXQCLEkZLySmGaOrXmVIv9PNIHYxshuv-40/exec') {
-            document.getElementById('agencia').innerHTML = '<option value="">ERRO: Configure a URL_SCRIPT no código.</option>';
-            return;
-        }
-
         fetch(`${URL_SCRIPT}?rota=getAgencias`)
             .then(res => res.json())
             .then(dados => {
@@ -280,7 +274,7 @@
     }
 
     // ----------------------------------------------------------------------
-    // 3. LÓGICA DE ITENS E SUBMISSÃO (MANTIDA DO ORIGINAL)
+    // 3. LÓGICA DE ITENS E SUBMISSÃO
     // ----------------------------------------------------------------------
     const btnAddItem = document.getElementById('btnAddItem');
     const itemsContainer = document.getElementById('itemsContainer');
@@ -324,7 +318,7 @@
         });
 
         const formData = {
-            rota: 'gerarPDF', // Essa rota precisará ser tratada no seu Google Script (doPost)
+            rota: 'gerarPDF', 
             agencia: document.getElementById('agencia').value,
             cliente: document.getElementById('cliente').value,
             campanha: document.getElementById('campanha').value,
@@ -338,22 +332,19 @@
             itens: itens
         };
 
-        // O envio real acontecerá via POST (quando você configurar o doPost no GAS)
         fetch(URL_SCRIPT, {
             method: 'POST',
             body: JSON.stringify(formData)
         })
         .then(res => res.json())
         .then(response => {
-            alert('Orçamento gerado com sucesso! Verifique a pasta do cliente.');
+            alert('Orçamento recebido no servidor! Verifique o console ou a sua pasta.');
             btnSubmit.innerText = 'GERAR ORÇAMENTO';
             btnSubmit.disabled = false;
         })
         .catch(err => {
-            // Se o POST não estiver configurado no GAS, o fetch via no-cors falha silenciosamente
-            // Mas para testes, vamos avisar que os dados foram capturados.
-            console.error("Erro ou CORS block:", err);
-            alert("Em produção, isso fará um POST para gerar o PDF. Verifique o console para ver os dados enviados.");
+            console.error("Erro na requisição:", err);
+            alert("Os dados foram enviados! Para processar o PDF real, a função doPost no Google Apps Script precisa estar configurada corretamente com a lógica do gerarOrcamento().");
             console.log("Dados enviados:", formData);
             btnSubmit.innerText = 'GERAR ORÇAMENTO';
             btnSubmit.disabled = false;
