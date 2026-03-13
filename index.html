@@ -85,7 +85,6 @@
             flex: 1;
         }
         
-        /* TRANSFORMA O VISUAL EM MAIÚSCULAS AUTOMATICAMENTE */
         .input-group input[type="text"], 
         .input-group input[list] {
             text-transform: uppercase;
@@ -198,15 +197,18 @@
             
             <div class="input-group">
                 <label>Praça</label>
-                <input type="text" id="praca" placeholder="Ex: BAHIA E SERGIPE" required>
+                <input list="lista-praca" id="praca" placeholder="Carregando..." required>
+                <datalist id="lista-praca"></datalist>
             </div>
             <div class="input-group">
                 <label>Período</label>
-                <input type="text" id="periodo" placeholder="Ex: 1 MÊS" required>
+                <input list="lista-periodo" id="periodo" placeholder="Carregando..." required>
+                <datalist id="lista-periodo"></datalist>
             </div>
             <div class="input-group">
-                <label>Meios</label>
-                <input type="text" id="meios" placeholder="Ex: RÁDIO, CARRO DE SOM" required>
+                <label>Meios (Pode digitar vários com vírgula)</label>
+                <input list="lista-meios" id="meios" placeholder="Carregando..." required>
+                <datalist id="lista-meios"></datalist>
             </div>
         </div>
 
@@ -231,15 +233,18 @@
             
             <div class="input-group">
                 <label>Condição de Pagamento</label>
-                <input type="text" id="condicao" value="1X Sem Juros" required>
+                <input list="lista-condicao" id="condicao" placeholder="Carregando..." required>
+                <datalist id="lista-condicao"></datalist>
             </div>
             <div class="input-group">
                 <label>Prazo de Pagamento</label>
-                <input type="text" id="prazoPag" value="30 DIAS" required>
+                <input list="lista-prazoPag" id="prazoPag" placeholder="Carregando..." required>
+                <datalist id="lista-prazoPag"></datalist>
             </div>
             <div class="input-group">
                 <label>Validade da Proposta</label>
-                <input type="text" id="validade" value="10 DIAS" required>
+                <input list="lista-validade" id="validade" placeholder="Carregando..." required>
+                <datalist id="lista-validade"></datalist>
             </div>
             <div class="input-group">
                 <label>Prazo de Entrega</label>
@@ -255,7 +260,7 @@
 <script>
     const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbzfeflsrPywqxil3eoPHKzjMdSKh_cTKVXQCLEkZLySmGaOrXmVIv9PNIHYxshuv-40/exec'; 
 
-    // --- GARANTIR TEXTOS MAIÚSCULOS SEM BUGAR O TECLADO MOBILE ---
+    // --- GARANTIR TEXTOS MAIÚSCULOS ---
     document.addEventListener('input', function(e) {
         if (e.target.tagName === 'INPUT' && (e.target.type === 'text' || e.target.hasAttribute('list'))) {
             let start = e.target.selectionStart;
@@ -265,8 +270,42 @@
         }
     });
 
-    // --- CARREGAMENTO INICIAL ---
-    window.onload = () => buscarAgencias();
+    // --- CARREGAMENTO INICIAL (AGÊNCIAS E MENUS INTELIGENTES) ---
+    window.onload = () => {
+        buscarAgencias();
+        buscarMenus();
+    };
+
+    function buscarMenus() {
+        fetch(`${URL_SCRIPT}?rota=getDropdowns`)
+            .then(res => res.json())
+            .then(dados => {
+                preencherDatalist('lista-praca', dados.praca);
+                document.getElementById('praca').placeholder = "Ex: BAHIA E SERGIPE";
+
+                preencherDatalist('lista-periodo', dados.periodo);
+                document.getElementById('periodo').placeholder = "Ex: 1 MÊS";
+
+                preencherDatalist('lista-meios', dados.meios);
+                document.getElementById('meios').placeholder = "Ex: RÁDIO, SPOT";
+
+                preencherDatalist('lista-condicao', dados.condicao);
+                document.getElementById('condicao').placeholder = "Ex: 1X SEM JUROS";
+
+                preencherDatalist('lista-prazoPag', dados.prazoPag);
+                document.getElementById('prazoPag').placeholder = "Ex: 30 DIAS";
+
+                preencherDatalist('lista-validade', dados.validade);
+                document.getElementById('validade').placeholder = "Ex: 10 DIAS";
+            });
+    }
+
+    function preencherDatalist(idLista, arrayOpcoes) {
+        if (!arrayOpcoes) return;
+        let html = '';
+        arrayOpcoes.forEach(item => html += `<option value="${item}">`);
+        document.getElementById(idLista).innerHTML = html;
+    }
 
     function buscarAgencias(selecionarNome = '') {
         document.getElementById('agencia').placeholder = "Carregando agências...";
@@ -290,7 +329,6 @@
         const cliData = document.getElementById('lista-clientes');
         
         if (!selecionarNome) cliInput.value = '';
-        
         if (!ag) {
             cliInput.placeholder = 'Selecione uma agência primeiro';
             cliData.innerHTML = '';
@@ -309,49 +347,41 @@
             });
     }
 
-    // --- CRIAÇÃO DE AGÊNCIA E CLIENTE (MÉTODO GET) ---
+    // --- CRIAÇÃO DE AGÊNCIA E CLIENTE ---
     function criarNovaAgencia() {
         let nomeAgencia = prompt("Digite o nome da NOVA AGÊNCIA:");
         if (!nomeAgencia) return;
         
         nomeAgencia = nomeAgencia.trim().toUpperCase();
         document.getElementById('agencia').value = '';
-        document.getElementById('agencia').placeholder = "Criando pasta no Drive...";
+        document.getElementById('agencia').placeholder = "Criando pasta...";
 
         fetch(`${URL_SCRIPT}?rota=criarAgencia&nome=${encodeURIComponent(nomeAgencia)}`)
         .then(res => res.json())
         .then(res => {
             if (res.erro) { alert("Erro: " + res.erro); return; }
-            alert("Agência criada com sucesso: " + res.nome);
+            alert("Agência criada com sucesso!");
             buscarAgencias(res.nome);
-        })
-        .catch(err => {
-            alert("Erro ao conectar com o Drive.");
-            document.getElementById('agencia').placeholder = "Erro na criação.";
         });
     }
 
     function criarNovoCliente() {
         const ag = document.getElementById('agencia').value;
-        if (!ag) { alert("Por favor, selecione uma Agência primeiro!"); return; }
+        if (!ag) { alert("Selecione uma Agência primeiro!"); return; }
 
-        let nomeCliente = prompt(`Digite o nome do NOVO CLIENTE para a agência:\n${ag}`);
+        let nomeCliente = prompt(`Digite o nome do NOVO CLIENTE:\n${ag}`);
         if (!nomeCliente) return;
 
         nomeCliente = nomeCliente.trim().toUpperCase();
         document.getElementById('cliente').value = '';
-        document.getElementById('cliente').placeholder = "Criando pasta no Drive...";
+        document.getElementById('cliente').placeholder = "Criando pasta...";
 
         fetch(`${URL_SCRIPT}?rota=criarCliente&agencia=${encodeURIComponent(ag)}&nome=${encodeURIComponent(nomeCliente)}`)
         .then(res => res.json())
         .then(res => {
             if (res.erro) { alert("Erro: " + res.erro); return; }
-            alert("Cliente criado com sucesso: " + res.nome);
+            alert("Cliente criado com sucesso!");
             carregarClientes(res.nome);
-        })
-        .catch(err => {
-            alert("Erro ao conectar com o Drive.");
-            document.getElementById('cliente').placeholder = "Erro na criação.";
         });
     }
 
@@ -361,7 +391,7 @@
     let itemCount = 1;
 
     btnAddItem.addEventListener('click', () => {
-        if (itemCount >= 9) { alert("O limite máximo é de 9 itens por orçamento."); return; }
+        if (itemCount >= 9) { alert("Limite máximo: 9 itens."); return; }
         const newItem = document.createElement('div');
         newItem.className = 'item-row';
         newItem.innerHTML = `
@@ -409,7 +439,7 @@
         fetch(URL_SCRIPT, { method: 'POST', body: JSON.stringify(formData) })
         .then(res => res.json())
         .then(response => {
-            alert('Orçamento enviado com sucesso!');
+            alert('Orçamento enviado com sucesso! Se digitou palavras novas, elas já foram salvas na planilha.');
             btnSubmit.innerText = 'GERAR ORÇAMENTO';
             btnSubmit.disabled = false;
         }).catch(err => {
