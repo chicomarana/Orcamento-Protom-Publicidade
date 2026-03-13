@@ -85,8 +85,9 @@
             flex: 1;
         }
         
-        .input-group input[type="text"], 
-        .input-group input[list] {
+        /* TRANSFORMA O VISUAL EM MAIÚSCULAS APENAS SE NÃO FOR O CAMPO DESCRIÇÃO */
+        .input-group input[type="text"]:not(.item-desc), 
+        .input-group input[list]:not(.item-desc) {
             text-transform: uppercase;
         }
 
@@ -266,9 +267,12 @@
 <script>
     const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbzfeflsrPywqxil3eoPHKzjMdSKh_cTKVXQCLEkZLySmGaOrXmVIv9PNIHYxshuv-40/exec'; 
 
-    // --- GARANTIR TEXTOS MAIÚSCULOS ---
+    // --- GARANTIR TEXTOS MAIÚSCULOS (EXCETO NA DESCRIÇÃO) ---
     document.addEventListener('input', function(e) {
         if (e.target.tagName === 'INPUT' && (e.target.type === 'text' || e.target.hasAttribute('list'))) {
+            // Ignora a conversão para maiúsculas se for o campo de descrição
+            if (e.target.classList.contains('item-desc')) return;
+            
             let start = e.target.selectionStart;
             let end = e.target.selectionEnd;
             e.target.value = e.target.value.toUpperCase();
@@ -361,7 +365,6 @@
                 preencherDatalist('lista-prazoPag', dados.prazoPag); document.getElementById('prazoPag').placeholder = "Ex: 30 DIAS";
                 preencherDatalist('lista-validade', dados.validade); document.getElementById('validade').placeholder = "Ex: 10 DIAS";
                 
-                // Trata as novas listas de Peça e Descrição
                 preencherDatalist('lista-peca', dados.peca);
                 preencherDatalist('lista-desc', dados.descricoes);
 
@@ -462,7 +465,8 @@
         document.querySelectorAll('.item-row').forEach(row => {
             itens.push({
                 peca: row.querySelector('.item-peca').value.toUpperCase(),
-                desc: row.querySelector('.item-desc').value.toUpperCase(),
+                // Removido o .toUpperCase() daqui! Vai enviar exatamente como está na tela.
+                desc: row.querySelector('.item-desc').value,
                 valor: row.querySelector('.item-valor').value,
                 qtde: row.querySelector('.item-qtde').value
             });
