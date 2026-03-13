@@ -17,14 +17,7 @@
         .app-container { width: 100%; max-width: 480px; background-color: #ffffff; min-height: 100vh; padding: 20px 15px; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
 
         .header { text-align: center; margin-bottom: 20px; }
-        
-        /* --- DIMENSÃO DO LOGO AUMENTADA AQUI (Turno 7) --- */
-        .header img { 
-            max-height: 90px; /* Aumentado de 60px para 90px */
-            margin-bottom: 8px; /* Pequeno ajuste de respiro */
-            object-fit: contain; 
-        }
-        
+        .header img { max-height: 90px; margin-bottom: 8px; object-fit: contain; }
         .header h1 { font-size: 24px; color: var(--yellow-main); margin-bottom: 5px; }
         .header h1 span { color: var(--orange-main); }
         .header p { font-size: 12px; color: var(--text-gray); font-weight: 600; }
@@ -58,24 +51,8 @@
         .meios-header { padding: 15px; background: #FFF5EC; border-bottom: 1px solid var(--border-color); }
         .meios-body { padding: 15px; max-height: 200px; overflow-y: auto; }
         
-        /* Menu Meios Alinhado e Centralizado (Correção Turno 6) */
-        .meio-checkbox-item { 
-            display: flex; 
-            align-items: center; /* Alinha o checkbox perfeitamente com o texto */
-            margin-bottom: 12px; 
-            font-size: 14px; 
-            font-weight: 600;
-            color: var(--text-dark); 
-            cursor: pointer;
-        }
-        .meio-checkbox-item input { 
-            margin-right: 12px; 
-            margin-top: 0;
-            width: 22px; 
-            height: 22px; 
-            accent-color: var(--orange-main); 
-            flex-shrink: 0;
-        }
+        .meio-checkbox-item { display: flex; align-items: center; margin-bottom: 12px; font-size: 14px; font-weight: 600; color: var(--text-dark); cursor: pointer; }
+        .meio-checkbox-item input { margin-right: 12px; margin-top: 0; width: 22px; height: 22px; accent-color: var(--orange-main); flex-shrink: 0; }
         .meio-checkbox-item span { line-height: 1; }
 
         .item-row { background: #fff; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; margin-bottom: 10px; position: relative;}
@@ -202,7 +179,7 @@
             <h2 class="card-title">6. Gerar e Enviar</h2>
             <button type="button" class="btn-action bg-green" id="btnGerarPdf" onclick="gerarDocumentoPDF()">GERAR ORÇAMENTO (PDF)</button>
             <button type="button" class="btn-action bg-blue" id="btnEmail" onclick="enviarViaEmail()">ENVIAR PDF VIA GMAIL (RASCUNHO)</button>
-            <button type="button" class="btn-action bg-wpp" id="btnWpp" onclick="enviarViaWhatsapp()">COMPARTILHAR PDF (WHATSAPP)</button>
+            <button type="button" class="btn-action bg-wpp" id="btnWpp" onclick="abrirModalOpcoesWpp()">COMPARTILHAR PDF (WHATSAPP)</button>
         </div>
 
     </form>
@@ -215,6 +192,19 @@
             <button onclick="fecharModal()" style="background: var(--red-btn); color: #fff; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px;">X FECHAR</button>
         </div>
         <div class="modal-body-scroll" id="modalList">Carregando...</div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalWpp">
+    <div class="modal-box" style="max-width: 320px; text-align: center; padding-top: 30px; padding-bottom: 20px;">
+        <h3 style="margin-bottom: 15px; color: var(--green-btn); font-size: 18px;">Escolha o WhatsApp</h3>
+        <p style="font-size: 13px; color: var(--text-gray); margin-bottom: 20px; padding: 0 10px;">Qual versão do aplicativo você deseja usar para enviar o PDF?</p>
+        
+        <button class="btn-action bg-green" onclick="acionarWhatsappEspecifico('com.whatsapp')" style="min-height: 45px; font-size: 13px; margin-bottom: 10px;">WhatsApp Pessoal</button>
+        
+        <button class="btn-action" style="background-color: #103629; min-height: 45px; font-size: 13px; margin-bottom: 15px;" onclick="acionarWhatsappEspecifico('com.whatsapp.w4b')">WhatsApp Business</button>
+        
+        <button class="btn-action" style="background-color: var(--text-gray); min-height: 45px; font-size: 13px; margin-bottom: 0;" onclick="fecharModalWpp()">CANCELAR</button>
     </div>
 </div>
 
@@ -377,15 +367,9 @@
     function carregarOrcamentoDrive(id) {
         document.getElementById('modalList').innerHTML = 'Lendo planilha... Aguarde (pode demorar).';
         fetch(`${URL_SCRIPT}?rota=carregarOrcamento&id=${id}`)
-        .then(r => {
-            if (!r.ok) throw new Error("Erro na rede.");
-            return r.json();
-        })
+        .then(r => { if (!r.ok) throw new Error("Erro na rede."); return r.json(); })
         .then(res => {
-            if(res.erro) {
-                document.getElementById('modalList').innerHTML = `<p style="color:red">Erro no servidor. Verifique se o serviço 'Drive API' está ativado.<br><br>Detalhes:<br>${res.erro}</p>`;
-                return;
-            }
+            if(res.erro) { document.getElementById('modalList').innerHTML = `<p style="color:red">Erro: ${res.erro}</p>`; return; }
             
             let d = res.dados;
             document.getElementById('numOrcamento').value = d.numOrcamento;
@@ -408,10 +392,7 @@
             calcularTotal(); fecharModal();
             alert("Dados carregados com sucesso! Verifique a caixa 'Orçamento de Ajuste' se for gerar uma nova versão.");
         })
-        .catch(err => {
-            document.getElementById('modalList').innerHTML = `<p style="color:red">Falha crítica ao tentar ler o arquivo. Isso geralmente ocorre quando a "Drive API" não está ativa no Google Apps Script.</p>`;
-            alert("Erro ao ler o arquivo. Consulte os detalhes na tela.");
-        });
+        .catch(err => { document.getElementById('modalList').innerHTML = `<p style="color:red">Falha crítica ao ler o arquivo.</p>`; });
     }
 
     let itemCount = 0;
@@ -507,12 +488,34 @@
         });
     }
 
-    function enviarViaWhatsapp() {
+    // --- NOVA LÓGICA DE ESCOLHA DE WHATSAPP ---
+    function abrirModalOpcoesWpp() {
         if(!linkPdfGerado) return alert("Gere o PDF primeiro para obter o link.");
+        document.getElementById('modalWpp').style.display = 'flex';
+    }
+
+    function fecharModalWpp() {
+        document.getElementById('modalWpp').style.display = 'none';
+    }
+
+    function acionarWhatsappEspecifico(pacoteAndroid) {
+        fecharModalWpp();
         let cli = document.getElementById('cliente').value.split(' - ')[1] || "Cliente";
         let camp = document.getElementById('campanha').value;
         let msg = `Olá! Segue o link do orçamento da campanha *${camp}* para a *${cli}*.\n\n📄 *Acessar PDF:* ${linkPdfGerado}`;
-        window.open(`https://wa.me/5571999660529?text=${encodeURIComponent(msg)}`, '_blank');
+        
+        let isAndroid = /Android/i.test(navigator.userAgent);
+        let linkPadraoWaMe = `https://wa.me/5571999660529?text=${encodeURIComponent(msg)}`;
+        
+        if (isAndroid) {
+            // Se for Android, usamos a mágica do Intent para forçar o app escolhido
+            let fallbackSeguro = encodeURIComponent(linkPadraoWaMe);
+            let intentUrl = `intent://send?phone=5571999660529&text=${encodeURIComponent(msg)}#Intent;scheme=whatsapp;package=${pacoteAndroid};S.browser_fallback_url=${fallbackSeguro};end;`;
+            window.location.href = intentUrl;
+        } else {
+            // Se for iPhone ou PC, o sistema lida com o link padrão wa.me
+            window.open(linkPadraoWaMe, '_blank');
+        }
     }
 </script>
 </body>
