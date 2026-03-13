@@ -22,7 +22,7 @@
 
         .app-container {
             width: 100%;
-            max-width: 480px; /* Mobile View */
+            max-width: 480px; 
             background-color: #ffffff;
             min-height: 100vh;
             padding: 20px 15px;
@@ -34,7 +34,6 @@
         .header h1 span { color: var(--orange-main); }
         .header p { font-size: 12px; color: var(--text-gray); }
 
-        /* Card Styles */
         .card {
             border-radius: 12px;
             padding: 20px 15px;
@@ -56,7 +55,6 @@
         .card-yellow .card-title { color: var(--text-dark); }
         .card-orange .card-title { color: var(--text-dark); }
 
-        /* Input Styles */
         .input-group {
             position: relative;
             margin-bottom: 15px;
@@ -72,14 +70,17 @@
             margin-left: 5px;
         }
 
+        .input-row { display: flex; gap: 8px; }
+
         .input-group input, .input-group select {
             width: 100%;
             padding: 12px;
             border: 1px solid var(--yellow-main);
             border-radius: 8px;
             font-size: 14px;
-            background-color: transparent;
+            background-color: #fff;
             outline: none;
+            flex: 1;
         }
         
         .card-orange .input-group input, .card-orange .input-group select {
@@ -90,7 +91,18 @@
             box-shadow: 0 0 0 2px rgba(255, 203, 5, 0.3);
         }
 
-        /* Items Section */
+        .btn-small {
+            background-color: var(--text-dark);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 0 15px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
         .item-row {
             background: #fff;
             border: 1px solid var(--border-color);
@@ -110,7 +122,6 @@
             margin-bottom: 15px;
         }
 
-        /* Buttons */
         .btn-primary {
             background-color: var(--yellow-main);
             color: #fff;
@@ -145,13 +156,19 @@
             
             <div class="input-group">
                 <label>Agência</label>
-                <input list="lista-agencias" id="agencia" placeholder="Carregando agências..." required onchange="carregarClientes()">
+                <div class="input-row">
+                    <input list="lista-agencias" id="agencia" placeholder="Carregando agências..." required onchange="carregarClientes()">
+                    <button type="button" class="btn-small" onclick="criarNovaAgencia()">+ Agência</button>
+                </div>
                 <datalist id="lista-agencias"></datalist>
             </div>
 
             <div class="input-group">
                 <label>Cliente</label>
-                <input list="lista-clientes" id="cliente" placeholder="Selecione uma agência primeiro" required>
+                <div class="input-row">
+                    <input list="lista-clientes" id="cliente" placeholder="Selecione uma agência primeiro" required>
+                    <button type="button" class="btn-small" onclick="criarNovoCliente()">+ Cliente</button>
+                </div>
                 <datalist id="lista-clientes"></datalist>
             </div>
 
@@ -191,7 +208,6 @@
                     </div>
                 </div>
             </div>
-            
             <button type="button" class="btn-add" id="btnAddItem">+ ADICIONAR ITEM (Max 9)</button>
         </div>
 
@@ -222,16 +238,13 @@
 </div>
 
 <script>
-    // ----------------------------------------------------------------------
-    // 1. CONFIGURAÇÃO DA API DO GOOGLE DRIVE
-    // ----------------------------------------------------------------------
     const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbzfeflsrPywqxil3eoPHKzjMdSKh_cTKVXQCLEkZLySmGaOrXmVIv9PNIHYxshuv-40/exec'; 
 
-    // ----------------------------------------------------------------------
-    // 2. BUSCA DINÂMICA DE AGÊNCIAS E CLIENTES (COM AUTOCOMPLETAR)
-    // ----------------------------------------------------------------------
-    
-    window.onload = () => {
+    // --- CARREGAMENTO INICIAL ---
+    window.onload = () => buscarAgencias();
+
+    function buscarAgencias(selecionarNome = '') {
+        document.getElementById('agencia').placeholder = "Carregando agências...";
         fetch(`${URL_SCRIPT}?rota=getAgencias`)
             .then(res => res.json())
             .then(dados => {
@@ -239,20 +252,19 @@
                 dados.forEach(n => html += `<option value="${n}">`);
                 document.getElementById('lista-agencias').innerHTML = html;
                 document.getElementById('agencia').placeholder = "Digite ou selecione a agência...";
-            })
-            .catch(err => {
-                console.error("Erro ao buscar agências:", err);
-                document.getElementById('agencia').placeholder = 'Erro ao carregar do Drive';
+                if(selecionarNome) {
+                    document.getElementById('agencia').value = selecionarNome;
+                    carregarClientes();
+                }
             });
-    };
+    }
 
-    function carregarClientes() {
+    function carregarClientes(selecionarNome = '') {
         const ag = document.getElementById('agencia').value;
         const cliInput = document.getElementById('cliente');
         const cliData = document.getElementById('lista-clientes');
         
-        // Limpa o cliente atual sempre que trocar a agência
-        cliInput.value = '';
+        if (!selecionarNome) cliInput.value = '';
         
         if (!ag) {
             cliInput.placeholder = 'Selecione uma agência primeiro';
@@ -261,7 +273,6 @@
         }
 
         cliInput.placeholder = 'Buscando clientes no Drive...';
-
         fetch(`${URL_SCRIPT}?rota=getClientes&agencia=${encodeURIComponent(ag)}`)
             .then(res => res.json())
             .then(dados => {
@@ -269,26 +280,61 @@
                 dados.forEach(n => html += `<option value="${n}">`);
                 cliData.innerHTML = html;
                 cliInput.placeholder = "Digite ou selecione o cliente...";
-            })
-            .catch(err => {
-                console.error("Erro ao buscar clientes:", err);
-                cliInput.placeholder = 'Erro ao carregar do Drive';
+                if(selecionarNome) cliInput.value = selecionarNome;
             });
     }
 
-    // ----------------------------------------------------------------------
-    // 3. LÓGICA DE ITENS E SUBMISSÃO
-    // ----------------------------------------------------------------------
+    // --- CRIAÇÃO DE AGÊNCIA E CLIENTE ---
+    function criarNovaAgencia() {
+        let nomeAgencia = prompt("Digite o nome da NOVA AGÊNCIA:");
+        if (!nomeAgencia) return;
+        
+        nomeAgencia = nomeAgencia.trim().toUpperCase();
+        document.getElementById('agencia').value = '';
+        document.getElementById('agencia').placeholder = "Criando pasta no Drive...";
+
+        fetch(URL_SCRIPT, {
+            method: 'POST',
+            body: JSON.stringify({ rota: 'criarAgencia', nome: nomeAgencia })
+        })
+        .then(res => res.json())
+        .then(res => {
+            if (res.erro) { alert("Erro: " + res.erro); return; }
+            alert("Agência criada com sucesso: " + res.nome);
+            buscarAgencias(res.nome); // Recarrega e já seleciona a nova
+        });
+    }
+
+    function criarNovoCliente() {
+        const ag = document.getElementById('agencia').value;
+        if (!ag) { alert("Por favor, selecione uma Agência primeiro!"); return; }
+
+        let nomeCliente = prompt(`Digite o nome do NOVO CLIENTE para a agência:\n${ag}`);
+        if (!nomeCliente) return;
+
+        nomeCliente = nomeCliente.trim().toUpperCase();
+        document.getElementById('cliente').value = '';
+        document.getElementById('cliente').placeholder = "Criando pasta no Drive...";
+
+        fetch(URL_SCRIPT, {
+            method: 'POST',
+            body: JSON.stringify({ rota: 'criarCliente', agencia: ag, nome: nomeCliente })
+        })
+        .then(res => res.json())
+        .then(res => {
+            if (res.erro) { alert("Erro: " + res.erro); return; }
+            alert("Cliente criado com sucesso: " + res.nome);
+            carregarClientes(res.nome); // Recarrega e já seleciona o novo
+        });
+    }
+
+    // --- LÓGICA DE ITENS E SUBMISSÃO ---
     const btnAddItem = document.getElementById('btnAddItem');
     const itemsContainer = document.getElementById('itemsContainer');
     let itemCount = 1;
 
     btnAddItem.addEventListener('click', () => {
-        if (itemCount >= 9) {
-            alert("O limite máximo é de 9 itens por orçamento.");
-            return;
-        }
-        
+        if (itemCount >= 9) { alert("O limite máximo é de 9 itens por orçamento."); return; }
         const newItem = document.createElement('div');
         newItem.className = 'item-row';
         newItem.innerHTML = `
@@ -297,15 +343,13 @@
             <div style="display: flex; gap: 10px;">
                 <div class="input-group" style="flex: 2;"><label>Valor Unit. (R$)</label><input type="number" step="0.01" class="item-valor" required></div>
                 <div class="input-group" style="flex: 1;"><label>Qtde.</label><input type="number" class="item-qtde" value="1" required></div>
-            </div>
-        `;
+            </div>`;
         itemsContainer.appendChild(newItem);
         itemCount++;
     });
 
     document.getElementById('orcamentoForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        
         const btnSubmit = document.getElementById('btnSubmit');
         btnSubmit.innerText = 'ENVIANDO PARA O DRIVE...';
         btnSubmit.disabled = true;
@@ -335,25 +379,18 @@
             itens: itens
         };
 
-        fetch(URL_SCRIPT, {
-            method: 'POST',
-            body: JSON.stringify(formData)
-        })
+        fetch(URL_SCRIPT, { method: 'POST', body: JSON.stringify(formData) })
         .then(res => res.json())
         .then(response => {
-            alert('Orçamento recebido no servidor! Verifique o console ou a sua pasta.');
+            alert('Orçamento enviado com sucesso!');
             btnSubmit.innerText = 'GERAR ORÇAMENTO';
             btnSubmit.disabled = false;
-        })
-        .catch(err => {
-            console.error("Erro na requisição:", err);
-            alert("Os dados foram enviados! Para processar o PDF real, a função doPost no Google Apps Script precisa estar configurada corretamente com a lógica do gerarOrcamento().");
-            console.log("Dados enviados:", formData);
+        }).catch(err => {
+            alert("Requisição enviada.");
             btnSubmit.innerText = 'GERAR ORÇAMENTO';
             btnSubmit.disabled = false;
         });
     });
 </script>
-
 </body>
 </html>
