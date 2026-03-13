@@ -85,6 +85,12 @@
             flex: 1;
         }
         
+        /* TRANSFORMA O VISUAL EM MAIÚSCULAS AUTOMATICAMENTE */
+        .input-group input[type="text"], 
+        .input-group input[list] {
+            text-transform: uppercase;
+        }
+
         .card-orange .input-group input, .card-orange .input-group select {
             border-color: var(--orange-main);
         }
@@ -249,6 +255,16 @@
 <script>
     const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbzfeflsrPywqxil3eoPHKzjMdSKh_cTKVXQCLEkZLySmGaOrXmVIv9PNIHYxshuv-40/exec'; 
 
+    // --- GARANTIR TEXTOS MAIÚSCULOS SEM BUGAR O TECLADO MOBILE ---
+    document.addEventListener('input', function(e) {
+        if (e.target.tagName === 'INPUT' && (e.target.type === 'text' || e.target.hasAttribute('list'))) {
+            let start = e.target.selectionStart;
+            let end = e.target.selectionEnd;
+            e.target.value = e.target.value.toUpperCase();
+            e.target.setSelectionRange(start, end);
+        }
+    });
+
     // --- CARREGAMENTO INICIAL ---
     window.onload = () => buscarAgencias();
 
@@ -368,8 +384,8 @@
         const itens = [];
         document.querySelectorAll('.item-row').forEach(row => {
             itens.push({
-                peca: row.querySelector('.item-peca').value,
-                desc: row.querySelector('.item-desc').value,
+                peca: row.querySelector('.item-peca').value.toUpperCase(),
+                desc: row.querySelector('.item-desc').value.toUpperCase(),
                 valor: row.querySelector('.item-valor').value,
                 qtde: row.querySelector('.item-qtde').value
             });
@@ -377,16 +393,16 @@
 
         const formData = {
             rota: 'gerarPDF', 
-            agencia: document.getElementById('agencia').value,
-            cliente: document.getElementById('cliente').value,
-            campanha: document.getElementById('campanha').value,
-            praca: document.getElementById('praca').value,
-            periodo: document.getElementById('periodo').value,
-            meios: document.getElementById('meios').value,
-            condicao: document.getElementById('condicao').value,
-            prazoPag: document.getElementById('prazoPag').value,
-            validade: document.getElementById('validade').value,
-            prazoEnt: document.getElementById('prazoEnt').value,
+            agencia: document.getElementById('agencia').value.toUpperCase(),
+            cliente: document.getElementById('cliente').value.toUpperCase(),
+            campanha: document.getElementById('campanha').value.toUpperCase(),
+            praca: document.getElementById('praca').value.toUpperCase(),
+            periodo: document.getElementById('periodo').value.toUpperCase(),
+            meios: document.getElementById('meios').value.toUpperCase(),
+            condicao: document.getElementById('condicao').value.toUpperCase(),
+            prazoPag: document.getElementById('prazoPag').value.toUpperCase(),
+            validade: document.getElementById('validade').value.toUpperCase(),
+            prazoEnt: document.getElementById('prazoEnt').value.toUpperCase(),
             itens: itens
         };
 
