@@ -17,9 +17,8 @@
         .app-container { width: 100%; max-width: 480px; background-color: #ffffff; min-height: 100vh; padding: 20px 15px; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
 
         .header { text-align: center; margin-bottom: 20px; }
-        .header h1 { font-size: 24px; color: var(--yellow-main); }
-        .header h1 span { color: var(--orange-main); }
-        .header p { font-size: 12px; color: var(--text-gray); }
+        .header img { max-height: 60px; margin-bottom: 5px; object-fit: contain; }
+        .header p { font-size: 12px; color: var(--text-gray); font-weight: 600; }
 
         /* TOP ACTION BAR */
         .top-actions { display: flex; gap: 8px; margin-bottom: 20px; }
@@ -55,9 +54,19 @@
         .btn-add { background: transparent; color: var(--orange-main); border: 2px dashed var(--orange-main); padding: 10px; width: 100%; border-radius: 8px; font-weight: 600; cursor: pointer; margin-bottom: 15px; }
         .total-box { text-align: right; font-size: 20px; font-weight: 700; color: var(--orange-main); }
 
-        .btn-primary { background-color: var(--yellow-main); color: #fff; border: none; padding: 15px; width: 100%; border-radius: 30px; font-size: 14px; font-weight: 700; cursor: pointer; margin-bottom: 10px;}
-        .btn-secondary { background-color: var(--text-dark); color: #fff; border: none; padding: 12px; width: 100%; border-radius: 30px; font-size: 14px; font-weight: 700; cursor: pointer; margin-bottom: 10px;}
-        .btn-wpp { background-color: #25D366; color: #fff; border: none; padding: 12px; width: 100%; border-radius: 30px; font-size: 14px; font-weight: 700; cursor: pointer; margin-bottom: 10px;}
+        /* PADRONIZAÇÃO DOS BOTÕES FINAIS */
+        .btn-action {
+            color: #fff; border: none; padding: 15px; width: 100%; min-height: 55px;
+            border-radius: 30px; font-size: 14px; font-weight: 700; cursor: pointer; margin-bottom: 12px;
+            display: flex; align-items: center; justify-content: center; text-transform: uppercase;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s;
+        }
+        .btn-action:active { transform: translateY(2px); }
+        .btn-action:disabled { background-color: #ccc; cursor: not-allowed; box-shadow: none; }
+        
+        .bg-green { background-color: var(--green-btn); }
+        .bg-blue { background-color: var(--blue-btn); }
+        .bg-wpp { background-color: #25D366; }
 
         /* MODAL DE ARQUIVOS */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 1000; }
@@ -71,8 +80,8 @@
 
 <div class="app-container">
     <div class="header">
-        <h1>📢 <span>PRO</span>TOM</h1>
-        <p>Projetos Sonoros - Mobile</p>
+        <img src="logo_protom.png" alt="Protom Logo">
+        <p>Orçamento Publicidade - Mobile</p>
     </div>
 
     <div class="top-actions">
@@ -118,9 +127,9 @@
                     <div id="meios-lista"></div>
                     <div class="input-row" style="margin-top: 15px;">
                         <input type="text" id="novo-meio" placeholder="Add novo...">
-                        <button type="button" class="btn-small" onclick="adicionarMeio()">+ Add</button>
+                        <button type="button" class="btn-small" style="background-color: var(--orange-main);" onclick="adicionarMeio()">+ Add</button>
                     </div>
-                    <button type="button" class="btn-secondary" style="margin-top: 15px;" onclick="toggleMeios()">OK</button>
+                    <button type="button" class="btn-action bg-blue" style="margin-top: 15px; min-height: 40px;" onclick="toggleMeios()">OK</button>
                 </div>
                 <input type="hidden" id="meios" required>
             </div>
@@ -149,10 +158,14 @@
                 <label>Nº Orçamento (Gerado/Carregado)</label>
                 <input type="text" id="numOrcamento" readonly style="background-color: #eee; border-color: #ccc;">
             </div>
-            <div class="input-group" style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
-                <input type="checkbox" id="isAjuste" style="width: 20px; height: 20px;">
-                <label style="margin:0; font-size: 14px;">Orçamento de Ajuste (Adiciona _1, _2...)</label>
+            
+            <div class="input-group">
+                <label>Se for orçamento de ajuste, marque a caixa abaixo.</label>
+                <div style="background-color: #fff; border: 1px solid var(--yellow-main); border-radius: 8px; padding: 12px; display: flex; justify-content: center; align-items: center;">
+                    <input type="checkbox" id="isAjuste" style="width: 25px; height: 25px; accent-color: var(--orange-main); margin: 0; cursor: pointer;">
+                </div>
             </div>
+
             <div class="input-group"><label>Data</label><input type="text" id="dataAtual" class="item-data" required></div>
             <div class="input-group"><label>Nome do Contato</label><input type="text" id="nomeContato" class="item-title-case" required></div>
             <div class="input-group"><label>Responsável</label><input list="lista-responsavel" id="responsavel" required><datalist id="lista-responsavel"></datalist></div>
@@ -160,9 +173,9 @@
 
         <div class="card card-gray">
             <h2 class="card-title">6. Gerar e Enviar</h2>
-            <button type="button" class="btn-primary" id="btnGerarPdf" onclick="gerarDocumentoPDF()">1. GERAR PDF NO DRIVE</button>
-            <button type="button" class="btn-secondary" id="btnEmail" onclick="enviarViaEmail()">2. ENVIAR RASCUNHO GMAIL</button>
-            <button type="button" class="btn-wpp" id="btnWpp" onclick="compartilharPDF()">3. COMPARTILHAR PDF (WHATSAPP)</button>
+            <button type="button" class="btn-action bg-green" id="btnGerarPdf" onclick="gerarDocumentoPDF()">GERAR ORÇAMENTO (PDF)</button>
+            <button type="button" class="btn-action bg-blue" id="btnEmail" onclick="enviarViaEmail()">ENVIAR PDF VIA GMAIL (RASCUNHO)</button>
+            <button type="button" class="btn-action bg-wpp" id="btnWpp" onclick="compartilharPDF()">COMPARTILHAR PDF (WHATSAPP)</button>
         </div>
 
     </form>
@@ -180,7 +193,7 @@
     const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbzfeflsrPywqxil3eoPHKzjMdSKh_cTKVXQCLEkZLySmGaOrXmVIv9PNIHYxshuv-40/exec'; 
     let linkPdfGerado = "";
     let nomeArquivoGerado = "";
-    let base64PdfGerado = ""; // GUARDA O ARQUIVO FÍSICO NA MEMÓRIA
+    let base64PdfGerado = ""; 
 
     // --- FORMATAÇÕES ---
     document.addEventListener('input', function(e) {
@@ -380,31 +393,31 @@
         let fd = coletarDadosForm(); fd.rota = 'gerarPDF';
         
         fetch(URL_SCRIPT, { method:'POST', body: JSON.stringify(fd) }).then(r=>r.json()).then(res => {
-            btn.innerText = "1. GERAR PDF NO DRIVE"; btn.disabled = false;
+            btn.innerText = "GERAR ORÇAMENTO (PDF)"; btn.disabled = false;
             if(res.erro) return alert("Erro: " + res.erro);
             
             document.getElementById('numOrcamento').value = res.orcNum;
             linkPdfGerado = res.url; nomeArquivoGerado = res.fileName; 
-            base64PdfGerado = res.base64; // GUARDA O ARQUIVO FÍSICO NA MEMÓRIA PARA O WHATSAPP
+            base64PdfGerado = res.base64; 
             
             if(confirm("PDF Gerado com sucesso!\nNº: " + res.orcNum + "\n\nDeseja abrir o PDF agora?")) window.open(res.url, '_blank');
-        }).catch(e=>{ btn.innerText = "1. GERAR PDF NO DRIVE"; btn.disabled = false; alert("Falha na conexão."); });
+        }).catch(e=>{ btn.innerText = "GERAR ORÇAMENTO (PDF)"; btn.disabled = false; alert("Falha na conexão."); });
     }
 
     function enviarViaEmail() {
-        if(!nomeArquivoGerado) return alert("Gere o PDF primeiro (Botão 1).");
+        if(!nomeArquivoGerado) return alert("Gere o PDF primeiro antes de enviar por e-mail.");
         const btn = document.getElementById('btnEmail'); btn.innerText = "CRIANDO RASCUNHO..."; btn.disabled = true;
         let fd = coletarDadosForm(); fd.rota = 'enviarEmail'; fd.fileName = nomeArquivoGerado;
         
         fetch(URL_SCRIPT, { method:'POST', body: JSON.stringify(fd) }).then(r=>r.json()).then(res => {
-            btn.innerText = "2. ENVIAR RASCUNHO GMAIL"; btn.disabled = false;
+            btn.innerText = "ENVIAR PDF VIA GMAIL (RASCUNHO)"; btn.disabled = false;
             if(res.erro) return alert("Erro: " + res.erro);
             alert("Rascunho criado no Gmail da Protom com sucesso!");
         });
     }
 
     async function compartilharPDF() {
-        if(!base64PdfGerado || !nomeArquivoGerado) return alert("Gere o PDF primeiro (Botão 1) para anexá-lo.");
+        if(!base64PdfGerado || !nomeArquivoGerado) return alert("Gere o PDF primeiro para anexá-lo.");
         
         const btn = document.getElementById('btnWpp');
         const textoOriginal = btn.innerText;
@@ -412,7 +425,6 @@
         btn.disabled = true;
 
         try {
-            // Decodifica a Base64 e recria o arquivo fisicamente na memória do celular
             const byteCharacters = atob(base64PdfGerado);
             const byteNumbers = new Array(byteCharacters.length);
             for (let i = 0; i < byteCharacters.length; i++) { byteNumbers[i] = byteCharacters.charCodeAt(i); }
@@ -420,7 +432,6 @@
             const blob = new Blob([byteArray], { type: 'application/pdf' });
             const file = new File([blob], nomeArquivoGerado + '.pdf', { type: 'application/pdf' });
 
-            // Abre a gaveta nativa de compartilhamento do Android/iOS (com o PDF anexado)
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
                 await navigator.share({
                     files: [file],
